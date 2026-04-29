@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-zero-ink: #ffffff;
+  --color-zero-paper: #0a0a0a;
+  --color-zero-earth: #00ff41;
+  --color-zero-sand: #00f2ff;
+  --color-zero-moss: #00ff41;
+  --color-zero-line: rgba(255, 255, 255, 0.1);
+}
+
+@layer base {
+  body {
+    @apply bg-zero-paper text-zero-ink font-sans antialiased selection:bg-zero-ink selection:text-zero-paper;
+    cursor: crosshair;
+  }
+
+  h1, h2, h3 {
+    @apply tracking-tighter uppercase font-bold;
+  }
+}
+
+@layer utilities {
+  .grid-lines {
+    background-image: linear-gradient(to right, var(--color-zero-line) 1px, transparent 1px),
+                      linear-gradient(to bottom, var(--color-zero-line) 1px, transparent 1px);
+    background-size: 80px 80px;
+  }
+
+  .text-micro {
+    @apply font-mono text-[9px] uppercase tracking-[0.2em];
+  }
+
+  .border-fine {
+    @apply border-[0.5px] border-zero-line;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 2px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-zero-paper);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-zero-ink);
+}
+
+/* Intersection Markers */
+.grid-marker::before {
+  content: '+';
+  position: absolute;
+  top: -6px;
+  left: -4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-zero-line);
+  pointer-events: none;
+}

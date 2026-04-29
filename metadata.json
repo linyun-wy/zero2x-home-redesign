@@ -1,0 +1,5 @@
+{
+  "name": "OneID Unified Auth",
+  "description": "A unified login and registration system with site switching, multi-language support, and a dynamic character grid background.",
+  "requestFramePermissions": []
+}
