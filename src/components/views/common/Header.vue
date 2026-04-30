@@ -2,44 +2,103 @@
   <header class="site-header">
     <div class="header-inner">
 
-      <!-- 左侧 Logo -->
-      <a href="/" class="logo-block">
-        <div class="logo-mark">Z</div>
-        <div class="logo-text-group">
-          <span class="logo-name">zero2x</span>
-          <span class="logo-sub text-micro" style="color:rgba(0,0,0,0.35);">Scientific Research Lab</span>
-        </div>
-      </a>
-
-      <!-- 中央导航（格子样式 + Scramble 效果） -->
-      <nav class="main-nav">
-        <a
-          v-for="item in navItems"
-          :key="item.key"
-          href="javascript:void(0);"
-          class="nav-cell"
-          :class="{ active: activeNav === item.key }"
-          @click="activeNav = item.key"
-        >
-          {{ t('nav.' + item.key) }}
+      <!-- 左侧：Logo + 站点（与首页格子线一致） -->
+      <div class="header-left">
+        <a href="/" class="logo-block">
+          <span class="nav-logo-wordmark">zero2x</span>
         </a>
+
+        <div class="site-slot" ref="siteDropdownRoot">
+          <button
+            type="button"
+            class="hdr-trigger"
+            :class="{ 'hdr-trigger--open': siteOpen }"
+            :aria-expanded="siteOpen"
+            :aria-haspopup="true"
+            :aria-label="t('header.siteAria')"
+            @click.stop="siteOpen = !siteOpen"
+          >
+            <span class="hdr-trigger-label">{{ currentSiteLabel }}</span>
+            <svg class="hdr-caret" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+              <path fill="currentColor" d="M5 2.5 L8 6 H2 Z" />
+            </svg>
+          </button>
+          <div v-show="siteOpen" class="hdr-panel hdr-panel--site" role="menu" @click.stop>
+            <button
+              v-for="s in siteOptions"
+              :key="s.key"
+              type="button"
+              class="hdr-item"
+              :class="{ 'hdr-item--active': selectedSite === s.key }"
+              role="menuitem"
+              @click="selectSite(s.key)"
+            >
+              {{ t(s.labelKey) }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 中央导航 -->
+      <nav class="main-nav">
+        <template v-for="item in navItems">
+          <!-- 产品：下拉 -->
+          <div
+            v-if="item.dropdown"
+            :key="'dd-' + item.key"
+            class="nav-dropdown nav-cell"
+            :class="{
+              active: activeNav === item.key || productsMenuOpen,
+              'nav-dropdown--open': productsMenuOpen,
+            }"
+            @mouseenter="onProductsEnter"
+            @mouseleave="onProductsLeave"
+          >
+            <button
+              type="button"
+              class="nav-dropdown-btn"
+              @click.prevent="activeNav = item.key"
+            >
+              {{ t('nav.' + item.key) }}
+              <svg class="hdr-caret hdr-caret--nav" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+                <path fill="currentColor" d="M5 2.5 L8 6 H2 Z" />
+              </svg>
+            </button>
+            <div v-show="productsMenuOpen" class="hdr-panel hdr-panel--products">
+              <a
+                v-for="sub in item.dropdown"
+                :key="sub.key"
+                href="javascript:void(0);"
+                class="hdr-item hdr-item--link"
+                :class="{ 'hdr-item--active': activeProductKey === sub.key }"
+                @click.prevent="selectProduct(sub.key)"
+              >
+                {{ sub.label }}
+              </a>
+            </div>
+          </div>
+          <!-- 普通项 -->
+          <a
+            v-else
+            :key="item.key"
+            href="javascript:void(0);"
+            class="nav-cell"
+            :class="{ active: activeNav === item.key }"
+            @click="activeNav = item.key"
+          >
+            {{ t('nav.' + item.key) }}
+          </a>
+        </template>
       </nav>
 
-      <!-- 右侧操作区 -->
+      <!-- 右侧 -->
       <div class="right-area">
-        <!-- UTC 时间 -->
         <div class="meta-block">
-          <span class="text-micro" style="color:rgba(0,0,0,0.3);">UTC+8 / {{ utcTime }}</span>
+          <span class="text-micro meta-clock">{{ siteClockOffsetLabel }} / {{ siteLocalTime }}</span>
         </div>
-        <!-- 版本号 -->
-        <div class="meta-block" style="border-right:none;">
-          <span class="text-micro" style="color:rgba(0,0,0,0.25);">v2.1.0</span>
-        </div>
-        <!-- 语言切换 -->
         <button class="action-cell lang-btn" @click="handleLangSwitch" :title="lang === 'zh' ? '切换英文' : 'Switch to Chinese'">
           <span class="text-micro">{{ lang === 'zh' ? 'EN' : '中文' }}</span>
         </button>
-        <!-- 登录 -->
         <button class="action-cell" title="登录">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -48,8 +107,7 @@
         </button>
       </div>
 
-      <!-- 移动端汉堡按钮 -->
-      <button class="mobile-toggle" @click="mobileOpen = !mobileOpen">
+      <button class="mobile-toggle" @click="mobileOpen = !mobileOpen" :aria-expanded="mobileOpen">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="3" y1="6" x2="21" y2="6"/>
           <line x1="3" y1="12" x2="21" y2="12"/>
@@ -58,17 +116,53 @@
       </button>
     </div>
 
-    <!-- 移动端菜单 -->
     <div v-if="mobileOpen" class="mobile-menu">
-      <a
-        v-for="item in navItems"
-        :key="item.key"
-        href="javascript:void(0);"
-        class="mobile-cell"
-        @click="activeNav = item.key; mobileOpen = false"
-      >
-        {{ t('nav.' + item.key) }}
-      </a>
+      <div class="mobile-site">
+        <span class="mobile-site-title text-micro">{{ t('header.siteAria') }}</span>
+        <div class="mobile-site-btns">
+          <button
+            v-for="s in siteOptions"
+            :key="s.key"
+            type="button"
+            class="mobile-site-btn"
+            :class="{ active: selectedSite === s.key }"
+            @click="selectSite(s.key)"
+          >
+            {{ t(s.labelKey) }}
+          </button>
+        </div>
+      </div>
+
+      <template v-for="item in navItems">
+        <div v-if="item.dropdown" :key="'m-dd-' + item.key" class="mobile-group">
+          <button type="button" class="mobile-cell mobile-cell--expand" @click="mobileProductsOpen = !mobileProductsOpen">
+            {{ t('nav.' + item.key) }}
+            <span class="mobile-chevron" :class="{ open: mobileProductsOpen }">›</span>
+          </button>
+          <div v-show="mobileProductsOpen" class="mobile-sub">
+            <a
+              v-for="sub in item.dropdown"
+              :key="sub.key"
+              href="javascript:void(0);"
+              class="mobile-cell mobile-sub-cell"
+              :class="{ active: activeProductKey === sub.key }"
+              @click="selectProduct(sub.key); mobileOpen = false"
+            >
+              {{ sub.label }}
+            </a>
+          </div>
+        </div>
+        <a
+          v-else
+          :key="'m-' + item.key"
+          href="javascript:void(0);"
+          class="mobile-cell"
+          @click="activeNav = item.key; mobileOpen = false"
+        >
+          {{ t('nav.' + item.key) }}
+        </a>
+      </template>
+
       <div class="mobile-cell" style="color:#2e4fff;" @click="handleLangSwitch">
         {{ lang === 'zh' ? 'Switch to English' : '切换到中文' }}
       </div>
@@ -79,24 +173,67 @@
 <script lang="ts">
 import Vue from 'vue';
 import { langStore, toggleLang, t } from '../../../lang/index';
-import ScrambleText from '../../ScrambleText.vue';
+
+type SiteKey = 'cn' | 'sg' | 'de';
+
+const SITE_STORAGE = 'zero2x-site';
+
+/** 与各站点区域对应的 IANA 时区（用于顶部时钟） */
+const SITE_TIMEZONES: Record<SiteKey, string> = {
+  cn: 'Asia/Shanghai',
+  sg: 'Asia/Singapore',
+  de: 'Europe/Berlin',
+};
+
+type ProductSubKey = 'm021' | 'geogpt' | 'oneastronomy' | 'genos' | 'oneporous';
+
+interface NavDropdownItem {
+  key: string;
+  dropdown: { key: ProductSubKey; label: string }[];
+}
+
+interface NavLinkItem {
+  key: string;
+  dropdown?: undefined;
+}
 
 export default Vue.extend({
   name: 'CommonHeader',
-  components: { ScrambleText },
   data() {
     return {
       activeNav: 'home',
       mobileOpen: false,
-      utcTime: '',
-      timer: null as any,
+      mobileProductsOpen: false,
+      siteLocalTime: '',
+      siteClockOffsetLabel: 'UTC+8',
+      timer: null as ReturnType<typeof setInterval> | null,
+      productsLeaveTimer: null as ReturnType<typeof setTimeout> | null,
       navItems: [
         { key: 'home' },
-        { key: 'products' },
+        {
+          key: 'products',
+          dropdown: [
+            { key: 'm021' as ProductSubKey, label: '021' },
+            { key: 'geogpt' as ProductSubKey, label: 'GeoGPT' },
+            { key: 'oneastronomy' as ProductSubKey, label: 'OneAstronomy' },
+            { key: 'genos' as ProductSubKey, label: 'Genos' },
+            { key: 'oneporous' as ProductSubKey, label: 'OnePorous' },
+          ],
+        },
         { key: 'resource' },
         { key: 'cases' },
         { key: 'news' },
         { key: 'events' },
+      ] as (NavLinkItem | NavDropdownItem)[],
+      selectedSite: 'cn' as SiteKey,
+      siteOpen: false,
+      productsMenuOpen: false,
+      /** 当前选中的产品子项（与示意一致默认 GeoGPT） */
+      activeProductKey: 'geogpt' as ProductSubKey,
+      siteOptions: [
+        { key: 'cn' as SiteKey, labelKey: 'header.siteChina' },
+        { key: 'sg' as SiteKey, labelKey: 'header.siteSingapore' },
+        { key: 'de' as SiteKey, labelKey: 'header.siteGermany' },
       ],
     };
   },
@@ -104,13 +241,37 @@ export default Vue.extend({
     lang() {
       return langStore.lang;
     },
+    currentSiteLabel(): string {
+      const map: Record<SiteKey, string> = {
+        cn: 'header.siteChina',
+        sg: 'header.siteSingapore',
+        de: 'header.siteGermany',
+      };
+      return t(map[this.selectedSite]);
+    },
   },
   mounted() {
+    try {
+      const raw = localStorage.getItem(SITE_STORAGE);
+      if (raw === 'cn' || raw === 'sg' || raw === 'de') {
+        this.selectedSite = raw;
+      }
+      const pk = localStorage.getItem('zero2x-product');
+      const allowed: ProductSubKey[] = ['m021', 'geogpt', 'oneastronomy', 'genos', 'oneporous'];
+      if (pk && (allowed as string[]).includes(pk)) {
+        this.activeProductKey = pk as ProductSubKey;
+      }
+    } catch (_) {
+      /* ignore */
+    }
     this.updateTime();
     this.timer = setInterval(this.updateTime, 1000);
+    document.addEventListener('click', this.closeSiteDropdown);
   },
   beforeDestroy() {
     if (this.timer) clearInterval(this.timer);
+    if (this.productsLeaveTimer) clearTimeout(this.productsLeaveTimer);
+    document.removeEventListener('click', this.closeSiteDropdown);
   },
   methods: {
     t(key: string) {
@@ -119,9 +280,68 @@ export default Vue.extend({
     handleLangSwitch() {
       toggleLang();
     },
+    formatUtcOffsetLabel(timeZone: string, date: Date): string {
+      try {
+        const parts = new Intl.DateTimeFormat('en-US', {
+          timeZone,
+          timeZoneName: 'shortOffset',
+        }).formatToParts(date);
+        let raw = parts.find((p) => p.type === 'timeZoneName')?.value?.trim() ?? '';
+        raw = raw.replace(/\u2212/g, '-');
+        if (/^GMT/i.test(raw)) return raw.replace(/^GMT/i, 'UTC');
+        return raw || 'UTC';
+      } catch {
+        return 'UTC';
+      }
+    },
     updateTime() {
       const now = new Date();
-      this.utcTime = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const tz = SITE_TIMEZONES[this.selectedSite];
+      this.siteClockOffsetLabel = this.formatUtcOffsetLabel(tz, now);
+      this.siteLocalTime = new Intl.DateTimeFormat('en-GB', {
+        timeZone: tz,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      }).format(now);
+    },
+    selectSite(key: SiteKey) {
+      this.selectedSite = key;
+      this.siteOpen = false;
+      this.updateTime();
+      try {
+        localStorage.setItem(SITE_STORAGE, key);
+      } catch (_) {
+        /* ignore */
+      }
+    },
+    selectProduct(key: ProductSubKey) {
+      this.activeProductKey = key;
+      this.activeNav = 'products';
+      try {
+        localStorage.setItem('zero2x-product', key);
+      } catch (_) {
+        /* ignore */
+      }
+    },
+    onProductsEnter() {
+      if (this.productsLeaveTimer) {
+        clearTimeout(this.productsLeaveTimer);
+        this.productsLeaveTimer = null;
+      }
+      this.productsMenuOpen = true;
+    },
+    onProductsLeave() {
+      this.productsLeaveTimer = setTimeout(() => {
+        this.productsMenuOpen = false;
+      }, 240);
+    },
+    closeSiteDropdown(e: MouseEvent) {
+      const root = this.$refs.siteDropdownRoot as HTMLElement | undefined;
+      if (!root || !this.siteOpen) return;
+      if (root.contains(e.target as Node)) return;
+      this.siteOpen = false;
     },
   },
 });
@@ -137,6 +357,7 @@ export default Vue.extend({
   background: rgba(249, 250, 249, 0.95);
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(12px);
+  overflow: visible;
 }
 
 .header-inner {
@@ -144,66 +365,182 @@ export default Vue.extend({
   display: flex;
   align-items: center;
   padding: 0;
-  position: relative; /* 支持 nav 绝对居中 */
+  position: relative;
+  overflow: visible;
 }
 
-/* ── Logo ── */
+/* ── 左侧 Logo + 站点 ── */
+.header-left {
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  z-index: 3;
+  overflow: visible;
+}
+
 .logo-block {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: flex-start;
   text-decoration: none;
   padding: 0 28px;
   height: 80px;
   border-right: 1px solid rgba(0, 0, 0, 0.08);
-  flex-shrink: 0;
-  transition: background 0.25s;
+}
+
+.nav-logo-wordmark {
+  font-size: clamp(17px, 1.85vw, 21px);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  color: var(--brand-blue-600, #2e4fff);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.site-slot {
   position: relative;
-  z-index: 2; /* 确保在绝对定位的 nav 之上 */
-}
-
-.logo-block:hover {
-  background: rgba(0, 0, 0, 0.03);
-}
-
-.logo-mark {
-  width: 28px;
-  height: 28px;
-  background: var(--brand-blue-600, #2E4FFF);
-  color: #ffffff;
   display: flex;
+  align-items: stretch;
+  padding: 0;
+  height: 80px;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  overflow: visible;
+}
+
+.meta-clock {
+  color: rgba(0, 0, 0, 0.3);
+  font-variant-numeric: tabular-nums;
+}
+
+/**
+ * 站点触发器：与主导航 `.nav-cell` / `.nav-cell.active` 一致
+ * — 默认 500 / 中性色；hover 与「产品」激活态同为整格 80px 高 + brand-blue-100 底 + 品牌蓝字 + 600
+ */
+.hdr-trigger {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
-  font-size: 12px;
-  font-weight: 700;
-  flex-shrink: 0;
-  transition: background 0.25s ease;
-}
-
-.logo-block:hover .logo-mark {
-  background: var(--brand-blue-700, #2441E0);
-}
-
-.logo-text-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.logo-name {
+  gap: 8px;
+  height: 100%;
+  padding: 0 22px;
+  margin: 0;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  color: rgba(0, 0, 0, 0.6);
   font-size: 14px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: #0a0c10;
-  line-height: 1.2;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: crosshair;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease;
 }
 
-.logo-sub {
-  color: rgba(0, 0, 0, 0.35);
-  line-height: 1.2;
+.hdr-trigger:hover,
+.hdr-trigger--open {
+  background: var(--brand-blue-100, #eef1ff);
+  color: var(--brand-blue-600, #2e4fff);
+  font-weight: 600;
 }
 
-/* ── Main Nav：绝对居中 ── */
+.hdr-trigger:hover .hdr-caret,
+.hdr-trigger--open .hdr-caret {
+  opacity: 1;
+  color: inherit;
+}
+
+.hdr-trigger-label {
+  letter-spacing: 0.02em;
+  max-width: 9.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hdr-caret {
+  flex-shrink: 0;
+  opacity: 0.55;
+  color: rgba(0, 0, 0, 0.45);
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.hdr-trigger--open .hdr-caret {
+  transform: rotate(180deg);
+}
+
+.hdr-panel {
+  position: absolute;
+  /* 与入口留出间距，避免白底面板压住导航项 hover/active 浅色底 */
+  top: calc(100% + 6px);
+  padding: 0;
+  width: max-content;
+  min-width: 0;
+  max-width: min(240px, calc(100vw - 24px));
+  border-radius: 2px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  z-index: 100;
+}
+
+.hdr-panel--site {
+  left: 0;
+}
+
+/* 左对齐当前「产品」列，避免居中后向左溢出挡住「首页」下划线 */
+.hdr-panel--products {
+  left: 0;
+  transform: none;
+}
+
+.hdr-item {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  padding: 12px 16px;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(10, 12, 16, 0.78);
+  white-space: nowrap;
+  cursor: crosshair;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.hdr-item:last-child {
+  border-bottom: none;
+}
+
+.hdr-item--link {
+  text-decoration: none;
+}
+
+.hdr-item:hover {
+  background: rgba(46, 79, 255, 0.06);
+  color: var(--brand-blue-600, #2e4fff);
+}
+
+.hdr-item--active {
+  background: var(--brand-blue-100, #eef1ff);
+  color: var(--brand-blue-600, #2e4fff);
+  font-weight: 600;
+}
+
+/* ── Main Nav ── */
 .main-nav {
   position: absolute;
   left: 50%;
@@ -212,9 +549,9 @@ export default Vue.extend({
   align-items: center;
   height: 80px;
   z-index: 1;
-  /* 两侧加外边框形成整体边框感 */
   border-left: 1px solid rgba(0, 0, 0, 0.08);
   border-right: 1px solid rgba(0, 0, 0, 0.08);
+  overflow: visible;
 }
 
 .nav-cell {
@@ -250,7 +587,7 @@ export default Vue.extend({
 }
 
 .nav-cell:hover::after {
-  transform: scaleX(0); /* 深色背景时隐藏下划线 */
+  transform: scaleX(0);
 }
 
 .nav-cell:last-child {
@@ -260,27 +597,85 @@ export default Vue.extend({
 .nav-cell.active {
   color: var(--brand-blue-600, #2e4fff);
   font-weight: 600;
-  background: var(--brand-blue-100, #EEF1FF);
+  background: var(--brand-blue-100, #eef1ff);
 }
 
 .nav-cell.active::after {
   transform: scaleX(1);
 }
 
-/* 品牌色 hover 状态 */
 .nav-cell:not(.active):hover {
   background: #0a0c10;
   color: #ffffff;
 }
 
-/* ── Right Area ── */
+/* 产品下拉容器（下拉露出后与入口有空隙，略延长收起延迟以减少误关） */
+.nav-dropdown {
+  padding: 0 !important;
+  position: relative;
+  overflow: visible;
+}
+
+.nav-dropdown-btn {
+  height: 100%;
+  width: 100%;
+  padding: 0 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: crosshair;
+  color: inherit;
+}
+
+/* 产品下拉箭头：与站点 `.hdr-caret` 同形（实心三角）、同色阶与展开旋转 */
+.hdr-caret--nav {
+  flex-shrink: 0;
+  opacity: 0.55;
+  color: rgba(0, 0, 0, 0.45);
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.nav-dropdown.active .hdr-caret--nav,
+.nav-dropdown.nav-dropdown--open .hdr-caret--nav {
+  opacity: 1;
+  color: var(--brand-blue-600, #2e4fff);
+}
+
+.nav-dropdown.nav-dropdown--open .hdr-caret--nav {
+  transform: rotate(180deg);
+}
+
+.nav-dropdown:hover:not(.active) .hdr-caret--nav {
+  opacity: 1;
+  color: #f9faf9;
+}
+
+.nav-dropdown.active:hover .hdr-caret--nav {
+  opacity: 1;
+  color: var(--brand-blue-600, #2e4fff);
+}
+
+.nav-dropdown:not(.active):hover .nav-dropdown-btn {
+  color: #ffffff;
+}
+
+.nav-dropdown.active .nav-dropdown-btn {
+  color: var(--brand-blue-600, #2e4fff);
+}
+
 .right-area {
   display: flex;
   align-items: center;
   height: 80px;
   margin-left: auto;
   position: relative;
-  z-index: 2; /* 确保在 nav 之上 */
+  z-index: 2;
 }
 
 .meta-block {
@@ -302,7 +697,6 @@ export default Vue.extend({
   border-top: none;
   border-right: none;
   border-bottom: none;
-  border-left: 1px solid rgba(0, 0, 0, 0.08);
   color: rgba(0, 0, 0, 0.55);
   transition: background 0.25s, color 0.25s;
   cursor: crosshair;
@@ -319,7 +713,6 @@ export default Vue.extend({
   font-weight: 600;
 }
 
-/* ── Mobile ── */
 .mobile-toggle {
   display: none;
   align-items: center;
@@ -339,16 +732,91 @@ export default Vue.extend({
   background: #f9faf9;
 }
 
-.mobile-cell {
+.mobile-site {
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.mobile-site-title {
   display: block;
+  margin-bottom: 10px;
+  color: rgba(0, 0, 0, 0.38);
+  letter-spacing: 0.12em;
+}
+
+.mobile-site-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mobile-site-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(10, 12, 16, 0.85);
+  cursor: crosshair;
+}
+
+.mobile-site-btn.active {
+  border-color: rgba(46, 79, 255, 0.35);
+  background: var(--brand-blue-100, #eef1ff);
+  color: var(--brand-blue-600, #2e4fff);
+  font-weight: 600;
+}
+
+.mobile-group {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.mobile-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 16px 28px;
   font-size: 14px;
   font-weight: 500;
   color: rgba(0, 0, 0, 0.7);
   text-decoration: none;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   transition: background 0.2s;
   cursor: crosshair;
+}
+
+.mobile-cell--expand {
+  width: 100%;
+  background: none;
+  border: none;
+  font: inherit;
+  text-align: left;
+}
+
+.mobile-chevron {
+  font-size: 18px;
+  color: rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s;
+  display: inline-block;
+}
+
+.mobile-chevron.open {
+  transform: rotate(90deg);
+}
+
+.mobile-sub {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.mobile-sub-cell {
+  padding-left: 44px !important;
+  font-size: 13px;
+}
+
+.mobile-sub-cell.active {
+  color: var(--brand-blue-600, #2e4fff);
+  font-weight: 600;
+  background: rgba(46, 79, 255, 0.06);
 }
 
 .mobile-cell:hover {
@@ -356,8 +824,17 @@ export default Vue.extend({
 }
 
 @media (max-width: 1100px) {
-  .main-nav { display: none; }
-  .right-area { display: none; }
-  .mobile-toggle { display: flex; }
+  .main-nav {
+    display: none;
+  }
+  .header-left .site-slot {
+    display: none;
+  }
+  .right-area {
+    display: none;
+  }
+  .mobile-toggle {
+    display: flex;
+  }
 }
 </style>

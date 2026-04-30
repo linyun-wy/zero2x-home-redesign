@@ -26,6 +26,12 @@ const zhMessages = {
     copyright: 'Copyright © 2026 之江实验室. All Rights Reserved',
     icp: '浙ICP备2020025785号-2',
   },
+  header: {
+    siteChina: '中国站',
+    siteSingapore: '新加坡站',
+    siteGermany: '德国站',
+    siteAria: '站点选择',
+  },
   hero: {
     tagline: '全球性开放科学基础设施',
     tagline2: '旨在推动"人工智能+科学"融合发展',
@@ -62,6 +68,12 @@ const enMessages = {
     icomputing: 'Intelligent Computing',
     copyright: '© Copyright 2026, All Rights Reserved by Zhejiang lab',
     icp: '浙ICP备2020025785号-2',
+  },
+  header: {
+    siteChina: 'China Site',
+    siteSingapore: 'Singapore Site',
+    siteGermany: 'Germany Site',
+    siteAria: 'Site selection',
   },
   hero: {
     tagline: 'A Global Open Science Infrastructure',

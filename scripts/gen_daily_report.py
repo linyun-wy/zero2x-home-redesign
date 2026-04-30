@@ -60,6 +60,10 @@ def clean_user_text(text: str) -> str:
     for tag in ['image_files', 'attached_files', 'open_and_recently_viewed_files',
                 'system_reminder', 'user_info', 'agent_transcripts', 'rules']:
         text = re.sub(rf'<{tag}>.*?</{tag}>', '', text, flags=re.DOTALL)
+    # 去除外链注入块，避免占据整段日报
+    text = re.sub(r'<external_links>.*?</external_links>', '', text, flags=re.DOTALL)
+    # 去除时间标签，日期已用于归档，不再展示在正文
+    text = re.sub(r'<timestamp>.*?</timestamp>', '', text, flags=re.DOTALL)
     # 去除 <user_query> 包裹标签（保留内容）
     text = re.sub(r'</?user_query>', '', text)
     # 去除 [Image] 及其后的文件路径说明，替换为简短标记
@@ -67,6 +71,25 @@ def clean_user_text(text: str) -> str:
     # 去除多余空行
     text = re.sub(r'\n{3,}', '\n\n', text)
     return text.strip()
+
+
+def extract_date_from_user_text(text: str) -> str:
+    """从用户消息中的 <timestamp>...<timestamp> 提取 YYYY-MM-DD。"""
+    m = re.search(r"<timestamp>(.*?)</timestamp>", text, flags=re.DOTALL)
+    if not m:
+        return ""
+
+    ts_text = m.group(1).strip()
+    # 例：Wednesday, Apr 29, 2026, 5:07 PM (UTC+8)
+    # 先去掉尾部时区说明，兼容不同机器写法
+    ts_text = re.sub(r"\s+\(UTC[^)]+\)\s*$", "", ts_text)
+
+    for fmt in ("%A, %b %d, %Y, %I:%M %p", "%a, %b %d, %Y, %I:%M %p"):
+        try:
+            return datetime.strptime(ts_text, fmt).strftime("%Y-%m-%d")
+        except ValueError:
+            continue
+    return ""
 
 
 # 英文内部思考模式（以大写字母开头的短句，或典型 thinking 句式）
@@ -147,7 +170,16 @@ def parse_jsonl_file(filepath: Path, start_line: int = 0) -> list[dict]:
 def row_date(row: dict) -> str:
     """从 transcript 行里提取 YYYY-MM-DD 日期。"""
     ts = str(row.get("timestamp", ""))
-    return ts[:10] if len(ts) >= 10 else ""
+    if len(ts) >= 10:
+        return ts[:10]
+
+    # 新版 transcript 无独立 timestamp 字段，时间在 user 消息文本里
+    if row.get("role") == "user":
+        message = row.get("message", {})
+        raw_text = extract_text_from_content(message.get("content", []))
+        return extract_date_from_user_text(raw_text)
+
+    return ""
 
 
 def iter_transcript_jsonl_files() -> List[Path]:

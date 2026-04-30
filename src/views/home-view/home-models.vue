@@ -39,12 +39,12 @@
         </div>
       </a>
 
-      <!-- Domain Models 标题 -->
-      <div style="margin-bottom:32px;display:flex;align-items:baseline;gap:20px;border-top:1px solid rgba(0,0,0,0.07);padding-top:40px;">
-        <h3 class="domain-heading">{{ lang === 'zh' ? '领域科学模型' : 'DOMAIN SCIENCE MODELS' }}</h3>
-        <span class="text-micro" style="color:rgba(0,0,0,0.35);">
+      <!-- Domain Models 标题：与「03 / …」区块一致，装饰编号在上 -->
+      <div class="domain-section-head">
+        <span class="text-micro domain-section-kicker">
           <ScrambleText text="03.2 / SPECIALIZED" />
         </span>
+        <h3 class="domain-heading">{{ lang === 'zh' ? '领域科学模型' : 'DOMAIN SCIENCE MODELS' }}</h3>
       </div>
 
       <!-- Domain Model Cards -->
@@ -58,7 +58,15 @@
           <div class="domain-card-brand">
             <span class="text-micro domain-card-tag">{{ model.tag }}</span>
             <div class="model-logo-wrap">
-              <img class="model-logo-img" :src="model.logo" :alt="model.name" />
+              <img
+                class="model-logo-img"
+                :class="{
+                  'model-logo-img--genos': model.key === 'genos',
+                  'model-logo-img--oneporous': model.key === 'oneporous',
+                }"
+                :src="model.logo"
+                :alt="model.name"
+              />
             </div>
           </div>
           <p class="card-desc">{{ lang === 'zh' ? model.descCn : model.descEn }}</p>
@@ -243,6 +251,19 @@ export default Vue.extend({
   text-transform: uppercase;
 }
 
+.domain-section-head {
+  margin-bottom: 32px;
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+  padding-top: 40px;
+}
+
+.domain-section-kicker {
+  display: block;
+  margin-bottom: 16px;
+  color: #2e4fff;
+  letter-spacing: 0.3em;
+}
+
 .domain-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -333,6 +354,16 @@ export default Vue.extend({
   object-fit: contain;
   object-position: left center;
   display: block;
+}
+
+/* Genos 源文件字重偏大，同 40px 仍显突兀，略缩小以与其它三枚对齐 */
+.model-logo-img--genos {
+  height: 32px;
+}
+
+/* OnePorous 源图上方留白较多，字形整体偏上：略下移以对齐邻近 logo 的视觉中线 */
+.model-logo-img--oneporous {
+  margin-top: 8px;
 }
 
 /* 基础模型区块标题行内的 Logo：与 `.model-logo-img` 一致（40px 高），横向字标限制宽度 */
