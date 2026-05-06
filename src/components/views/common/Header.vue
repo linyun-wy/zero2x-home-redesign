@@ -4,9 +4,9 @@
 
       <!-- 左侧：Logo + 站点（与首页格子线一致） -->
       <div class="header-left">
-        <a href="/" class="logo-block">
+        <router-link to="/" class="logo-block">
           <span class="nav-logo-wordmark">zero2x</span>
-        </a>
+        </router-link>
 
         <div class="site-slot" ref="siteDropdownRoot">
           <button
@@ -42,17 +42,16 @@
       <!-- 中央导航 -->
       <nav class="main-nav">
         <template v-for="item in navItems">
-          <!-- 产品：下拉 -->
           <div
             v-if="item.dropdown"
             :key="'dd-' + item.key"
             class="nav-dropdown nav-cell"
             :class="{
-              active: activeNav === item.key || productsMenuOpen,
-              'nav-dropdown--open': productsMenuOpen,
+              active: activeNav === item.key || navDropdownOpenKey === item.key,
+              'nav-dropdown--open': navDropdownOpenKey === item.key,
             }"
-            @mouseenter="onProductsEnter"
-            @mouseleave="onProductsLeave"
+            @mouseenter="onNavDropdownEnter(item.key)"
+            @mouseleave="onNavDropdownLeave"
           >
             <button
               type="button"
@@ -64,14 +63,14 @@
                 <path fill="currentColor" d="M5 2.5 L8 6 H2 Z" />
               </svg>
             </button>
-            <div v-show="productsMenuOpen" class="hdr-panel hdr-panel--products">
+            <div v-show="navDropdownOpenKey === item.key" class="hdr-panel hdr-panel--nav">
               <a
                 v-for="sub in item.dropdown"
                 :key="sub.key"
                 href="javascript:void(0);"
                 class="hdr-item hdr-item--link"
-                :class="{ 'hdr-item--active': activeProductKey === sub.key }"
-                @click.prevent="selectProduct(sub.key)"
+                :class="{ 'hdr-item--active': isNavSubActive(item.key, sub.key) }"
+                @click.prevent="selectNavSub(item.key, sub.key)"
               >
                 {{ sub.label }}
               </a>
@@ -81,10 +80,10 @@
           <a
             v-else
             :key="item.key"
-            href="javascript:void(0);"
+            href="#"
             class="nav-cell"
-            :class="{ active: activeNav === item.key }"
-            @click="activeNav = item.key"
+            :class="{ active: isPlainNavActive(item.key) }"
+            @click.prevent="onPlainNav(item)"
           >
             {{ t('nav.' + item.key) }}
           </a>
@@ -135,18 +134,22 @@
 
       <template v-for="item in navItems">
         <div v-if="item.dropdown" :key="'m-dd-' + item.key" class="mobile-group">
-          <button type="button" class="mobile-cell mobile-cell--expand" @click="mobileProductsOpen = !mobileProductsOpen">
+          <button
+            type="button"
+            class="mobile-cell mobile-cell--expand"
+            @click="mobileExpandedKey = mobileExpandedKey === item.key ? null : item.key"
+          >
             {{ t('nav.' + item.key) }}
-            <span class="mobile-chevron" :class="{ open: mobileProductsOpen }">›</span>
+            <span class="mobile-chevron" :class="{ open: mobileExpandedKey === item.key }">›</span>
           </button>
-          <div v-show="mobileProductsOpen" class="mobile-sub">
+          <div v-show="mobileExpandedKey === item.key" class="mobile-sub">
             <a
               v-for="sub in item.dropdown"
               :key="sub.key"
               href="javascript:void(0);"
               class="mobile-cell mobile-sub-cell"
-              :class="{ active: activeProductKey === sub.key }"
-              @click="selectProduct(sub.key); mobileOpen = false"
+              :class="{ active: isNavSubActive(item.key, sub.key) }"
+              @click="selectNavSub(item.key, sub.key); mobileOpen = false"
             >
               {{ sub.label }}
             </a>
@@ -155,9 +158,10 @@
         <a
           v-else
           :key="'m-' + item.key"
-          href="javascript:void(0);"
+          href="#"
           class="mobile-cell"
-          @click="activeNav = item.key; mobileOpen = false"
+          :class="{ active: isPlainNavActive(item.key) }"
+          @click.prevent="onPlainNav(item); mobileOpen = false"
         >
           {{ t('nav.' + item.key) }}
         </a>
@@ -185,11 +189,12 @@ const SITE_TIMEZONES: Record<SiteKey, string> = {
   de: 'Europe/Berlin',
 };
 
-type ProductSubKey = 'm021' | 'geogpt' | 'oneastronomy' | 'genos' | 'oneporous';
+type ModelSubKey = 'm021' | 'geogpt' | 'oneastronomy' | 'genos' | 'oneporous';
+type LabSubKey = 'lab02x' | 'oneearth';
 
 interface NavDropdownItem {
   key: string;
-  dropdown: { key: ProductSubKey; label: string }[];
+  dropdown: { key: string; label: string }[];
 }
 
 interface NavLinkItem {
@@ -203,39 +208,54 @@ export default Vue.extend({
     return {
       activeNav: 'home',
       mobileOpen: false,
-      mobileProductsOpen: false,
+      mobileExpandedKey: null as string | null,
       siteLocalTime: '',
       siteClockOffsetLabel: 'UTC+8',
       timer: null as ReturnType<typeof setInterval> | null,
-      productsLeaveTimer: null as ReturnType<typeof setTimeout> | null,
+      navDropdownLeaveTimer: null as ReturnType<typeof setTimeout> | null,
+      navDropdownOpenKey: null as string | null,
       navItems: [
         { key: 'home' },
         {
-          key: 'products',
+          key: 'models',
           dropdown: [
-            { key: 'm021' as ProductSubKey, label: '021' },
-            { key: 'geogpt' as ProductSubKey, label: 'GeoGPT' },
-            { key: 'oneastronomy' as ProductSubKey, label: 'OneAstronomy' },
-            { key: 'genos' as ProductSubKey, label: 'Genos' },
-            { key: 'oneporous' as ProductSubKey, label: 'OnePorous' },
+            { key: 'm021', label: '021' },
+            { key: 'geogpt', label: 'GeoGPT' },
+            { key: 'oneastronomy', label: 'OneAstronomy' },
+            { key: 'genos', label: 'Genos' },
+            { key: 'oneporous', label: 'OnePorous' },
           ],
         },
-        { key: 'resource' },
+        {
+          key: 'products',
+          dropdown: [
+            { key: 'lab02x', label: '02X Lab' },
+            { key: 'oneearth', label: 'OneEarth' },
+          ],
+        },
+        { key: 'data' },
         { key: 'cases' },
         { key: 'news' },
         { key: 'events' },
       ] as (NavLinkItem | NavDropdownItem)[],
       selectedSite: 'cn' as SiteKey,
       siteOpen: false,
-      productsMenuOpen: false,
-      /** 当前选中的产品子项（与示意一致默认 GeoGPT） */
-      activeProductKey: 'geogpt' as ProductSubKey,
+      activeModelKey: 'geogpt' as ModelSubKey,
+      activeLabKey: 'lab02x' as LabSubKey,
       siteOptions: [
         { key: 'cn' as SiteKey, labelKey: 'header.siteChina' },
         { key: 'sg' as SiteKey, labelKey: 'header.siteSingapore' },
         { key: 'de' as SiteKey, labelKey: 'header.siteGermany' },
       ],
     };
+  },
+  watch: {
+    $route: {
+      handler() {
+        this.syncNavFromRoute();
+      },
+      immediate: true,
+    },
   },
   computed: {
     lang() {
@@ -256,10 +276,15 @@ export default Vue.extend({
       if (raw === 'cn' || raw === 'sg' || raw === 'de') {
         this.selectedSite = raw;
       }
-      const pk = localStorage.getItem('zero2x-product');
-      const allowed: ProductSubKey[] = ['m021', 'geogpt', 'oneastronomy', 'genos', 'oneporous'];
-      if (pk && (allowed as string[]).includes(pk)) {
-        this.activeProductKey = pk as ProductSubKey;
+      const pk =
+        localStorage.getItem('zero2x-model') || localStorage.getItem('zero2x-product');
+      const modelAllowed: ModelSubKey[] = ['m021', 'geogpt', 'oneastronomy', 'genos', 'oneporous'];
+      if (pk && (modelAllowed as string[]).includes(pk)) {
+        this.activeModelKey = pk as ModelSubKey;
+      }
+      const lab = localStorage.getItem('zero2x-lab');
+      if (lab === 'lab02x' || lab === 'oneearth') {
+        this.activeLabKey = lab as LabSubKey;
       }
     } catch (_) {
       /* ignore */
@@ -270,7 +295,7 @@ export default Vue.extend({
   },
   beforeDestroy() {
     if (this.timer) clearInterval(this.timer);
-    if (this.productsLeaveTimer) clearTimeout(this.productsLeaveTimer);
+    if (this.navDropdownLeaveTimer) clearTimeout(this.navDropdownLeaveTimer);
     document.removeEventListener('click', this.closeSiteDropdown);
   },
   methods: {
@@ -316,25 +341,40 @@ export default Vue.extend({
         /* ignore */
       }
     },
-    selectProduct(key: ProductSubKey) {
-      this.activeProductKey = key;
-      this.activeNav = 'products';
-      try {
-        localStorage.setItem('zero2x-product', key);
-      } catch (_) {
-        /* ignore */
+    selectNavSub(navKey: string, subKey: string) {
+      if (navKey === 'models') {
+        this.activeModelKey = subKey as ModelSubKey;
+        this.activeNav = 'models';
+        try {
+          localStorage.setItem('zero2x-model', subKey);
+        } catch (_) {
+          /* ignore */
+        }
+      } else if (navKey === 'products') {
+        this.activeLabKey = subKey as LabSubKey;
+        this.activeNav = 'products';
+        try {
+          localStorage.setItem('zero2x-lab', subKey);
+        } catch (_) {
+          /* ignore */
+        }
       }
     },
-    onProductsEnter() {
-      if (this.productsLeaveTimer) {
-        clearTimeout(this.productsLeaveTimer);
-        this.productsLeaveTimer = null;
-      }
-      this.productsMenuOpen = true;
+    isNavSubActive(navKey: string, subKey: string): boolean {
+      if (navKey === 'models') return this.activeModelKey === subKey;
+      if (navKey === 'products') return this.activeLabKey === subKey;
+      return false;
     },
-    onProductsLeave() {
-      this.productsLeaveTimer = setTimeout(() => {
-        this.productsMenuOpen = false;
+    onNavDropdownEnter(key: string) {
+      if (this.navDropdownLeaveTimer) {
+        clearTimeout(this.navDropdownLeaveTimer);
+        this.navDropdownLeaveTimer = null;
+      }
+      this.navDropdownOpenKey = key;
+    },
+    onNavDropdownLeave() {
+      this.navDropdownLeaveTimer = setTimeout(() => {
+        this.navDropdownOpenKey = null;
       }, 240);
     },
     closeSiteDropdown(e: MouseEvent) {
@@ -342,6 +382,44 @@ export default Vue.extend({
       if (!root || !this.siteOpen) return;
       if (root.contains(e.target as Node)) return;
       this.siteOpen = false;
+    },
+    isPlainNavActive(key: string): boolean {
+      if (key === 'home') {
+        return this.$route.path === '/' && !this.$route.hash;
+      }
+      if (key === 'data') {
+        return this.$route.path === '/data';
+      }
+      return this.activeNav === key;
+    },
+    onPlainNav(item: NavLinkItem | NavDropdownItem) {
+      if ('dropdown' in item && item.dropdown) return;
+      const key = item.key;
+      this.activeNav = key;
+      if (key === 'home') {
+        this.$router.push({ path: '/' }).catch(() => {});
+      } else if (key === 'data') {
+        this.$router.push({ path: '/data' }).catch(() => {});
+      } else if (key === 'cases') {
+        this.$router.push({ path: '/', hash: '#section-cases' }).catch(() => {});
+      } else if (key === 'events') {
+        this.$router.push({ path: '/', hash: '#section-events' }).catch(() => {});
+      } else if (key === 'news') {
+        this.$router.push({ path: '/', hash: '#section-events' }).catch(() => {});
+      }
+    },
+    syncNavFromRoute() {
+      const path = this.$route.path;
+      const hash = this.$route.hash || '';
+      if (path === '/data') {
+        this.activeNav = 'data';
+        return;
+      }
+      if (path === '/') {
+        if (hash === '#section-cases') this.activeNav = 'cases';
+        else if (hash === '#section-events') this.activeNav = 'events';
+        else this.activeNav = 'home';
+      }
     },
   },
 });
@@ -491,13 +569,14 @@ export default Vue.extend({
 }
 
 .hdr-panel--site {
-  left: 0;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
-/* 左对齐当前「产品」列，避免居中后向左溢出挡住「首页」下划线 */
-.hdr-panel--products {
-  left: 0;
-  transform: none;
+/* 与对应导航格水平居中对齐（相对 .nav-dropdown / .site-slot 定位包含块） */
+.hdr-panel--nav {
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .hdr-item {

@@ -1,5 +1,5 @@
 <template>
-  <section style="background:#f4f5f7;position:relative;overflow:hidden;">
+  <section id="section-cases" style="background:#f4f5f7;position:relative;overflow:hidden;">
     <div class="absolute inset-0 pointer-events-none grid-lines" style="z-index:0;"></div>
 
     <div style="max-width:1320px;margin:0 auto;padding:64px 40px;position:relative;z-index:1;">

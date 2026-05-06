@@ -1,7 +1,7 @@
 <template>
   <div class="character-grid-container absolute inset-0 overflow-hidden pointer-events-none" ref="container">
     <!-- 从内向外「绽放」显现 + 光晕追随 logo 区域 -->
-    <div class="character-grid-stage">
+    <div class="character-grid-stage" :class="{ 'character-grid-stage--subtle': subtle }">
       <div
         class="character-grid font-mono whitespace-pre select-none"
         :style="gridStyle"
@@ -17,6 +17,13 @@
 <script>
 export default {
   name: 'CharacterGrid',
+  props: {
+    /** 氛围弱模式：降低对比与光晕，不抢了正文与操作动线 */
+    subtle: {
+      type: Boolean,
+      default: false,
+    },
+  },
   data() {
     return {
       cols: 0,
@@ -31,6 +38,18 @@ export default {
   },
   computed: {
     gridStyle() {
+      if (this.subtle) {
+        return {
+          display: 'block',
+          width: '100%',
+          height: '100%',
+          fontSize: '13px',
+          lineHeight: '15px',
+          color: 'rgba(125, 152, 212, 0.16)',
+          opacity: '1',
+          textShadow: '0 0 8px rgba(46, 79, 255, 0.045)',
+        };
+      }
       return {
         display: 'block',
         width: '100%',
@@ -170,6 +189,28 @@ export default {
   }
 }
 
+/* 数据页等场景：整体再压一档，只做背景氛围 */
+.character-grid-stage--subtle {
+  animation: grid-bloom-in-subtle 2.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes grid-bloom-in-subtle {
+  0% {
+    clip-path: circle(0% at 22% 46%);
+    opacity: 0.06;
+    filter: brightness(1.05) saturate(0.85);
+  }
+  55% {
+    opacity: 0.34;
+    filter: brightness(1.04) saturate(0.9);
+  }
+  100% {
+    clip-path: circle(160% at 22% 46%);
+    opacity: 0.38;
+    filter: brightness(1.02) saturate(0.88);
+  }
+}
+
 .matrix-spotlight {
   position: absolute;
   inset: -15%;
@@ -218,6 +259,39 @@ export default {
   }
   100% {
     background-position: -120% 60%;
+  }
+}
+
+.character-grid-stage--subtle .matrix-spotlight {
+  background: radial-gradient(
+    ellipse 48% 42% at 22% 46%,
+    rgba(110, 130, 255, 0.08) 0%,
+    rgba(46, 79, 255, 0.03) 42%,
+    transparent 72%
+  );
+  animation: spotlight-drift-subtle 12s ease-in-out infinite alternate;
+  mix-blend-mode: screen;
+  opacity: 1;
+}
+
+.character-grid-stage--subtle .matrix-shimmer {
+  opacity: 0.45;
+  background: linear-gradient(
+    115deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.015) 50%,
+    transparent 60%
+  );
+}
+
+@keyframes spotlight-drift-subtle {
+  0% {
+    transform: translate(-1.5%, -1%) scale(1);
+    opacity: 0.18;
+  }
+  100% {
+    transform: translate(2%, 1.5%) scale(1.06);
+    opacity: 0.3;
   }
 }
 

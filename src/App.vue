@@ -5,7 +5,7 @@
 
     <!-- 主视图区域（顶部留出 80px 给 fixed 导航） -->
     <main style="padding-top:80px;">
-      <HomeView />
+      <router-view />
     </main>
 
     <!-- 全局页尾 -->
@@ -16,7 +16,6 @@
 <script setup lang="ts">
 import Header from './components/views/common/Header.vue';
 import Footer from './components/views/common/Footer.vue';
-import HomeView from './views/home-view/index.vue';
 </script>
 
 <style>

@@ -1,5 +1,5 @@
 <template>
-  <section class="contact-section relative overflow-hidden text-white" style="min-height:400px;display:flex;flex-direction:column;">
+  <section id="section-events" class="contact-section relative overflow-hidden text-white" style="min-height:400px;display:flex;flex-direction:column;">
     <!-- ASCII 颗粒背景（参考 aino.agency 加载字母质感） -->
     <AsciiGrainBackdrop class="absolute inset-0" />
 

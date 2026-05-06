@@ -20,6 +20,7 @@
     "motion": "^12.23.24",
     "vite": "^6.2.0",
     "vue": "^2.7.16",
+    "vue-router": "^3.6.5",
     "vue-template-compiler": "^2.7.16"
   },
   "devDependencies": {
