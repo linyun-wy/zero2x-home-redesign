@@ -2,16 +2,18 @@
   <section id="section-cases" style="background:#f4f5f7;position:relative;overflow:hidden;">
     <div class="absolute inset-0 pointer-events-none grid-lines" style="z-index:0;"></div>
 
-    <div style="max-width:1320px;margin:0 auto;padding:64px 40px;position:relative;z-index:1;">
+    <div style="max-width:1320px;margin:0 auto;padding:100px 40px 120px;position:relative;z-index:1;">
 
       <div style="margin-bottom:56px;">
         <span class="text-micro" style="color:#2e4fff;display:block;margin-bottom:16px;letter-spacing:0.3em;">
           <ScrambleText text="06 / ACCELERATING_RESEARCH" />
         </span>
-        <h2 class="cases-heading">{{ lang === 'zh' ? '加速科研案例' : 'RESEARCH CASES' }}</h2>
+        <h2 class="cases-heading">
+          <SplitReveal :text="lang === 'zh' ? '加速科研案例' : 'RESEARCH CASES'" />
+        </h2>
       </div>
 
-      <div style="position:relative;min-height:360px;">
+      <div style="position:relative;min-height:360px;" v-reveal="{ delay: 120 }">
         <transition name="slide-case">
           <div
             v-for="(c, i) in cases"
@@ -46,9 +48,18 @@
                   <span style="color:rgba(0,0,0,0.25);">PREVIEW</span>
                 </div>
                 <div class="case-frame-inner">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.12)" stroke-width="1">
-                    <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                  </svg>
+                  <template v-if="c.image">
+                    <img
+                      :src="c.image"
+                      :alt="lang === 'zh' ? c.titleZh : c.titleEn"
+                      class="case-img"
+                    />
+                  </template>
+                  <template v-else>
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.12)" stroke-width="1">
+                      <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                  </template>
                 </div>
               </div>
             </div>
@@ -64,10 +75,11 @@
 import Vue from 'vue';
 import { langStore } from '../../lang/index';
 import ScrambleText from '../../components/ScrambleText.vue';
+import SplitReveal from '../../components/SplitReveal.vue';
 
 export default Vue.extend({
   name: 'HomeCases',
-  components: { ScrambleText },
+  components: { ScrambleText, SplitReveal },
   data() {
     return {
       currentIndex: 0,
@@ -78,6 +90,7 @@ export default Vue.extend({
           descZh: '王涛教授与GeoGPT的合作旨在通过构建前沿的大数据平台和人工智能驱动的研究工具，打破这一瓶颈，彻底改变岩浆岩数据的管理与应用模式。',
           descEn: "Professor Wang Tao's collaboration with GeoGPT aims to break this bottleneck by building a cutting-edge big data platform and AI-driven research tools, revolutionizing how igneous rock data is managed.",
           stats: [{ value: '15,202', label: 'Data Points' }, { value: '10×', label: 'Speed Up' }],
+          image: '/case-geogpt.png',
         },
         {
           titleZh: '基因组序列的精准变异分析',
@@ -85,6 +98,7 @@ export default Vue.extend({
           descZh: '通过Genos基础模型，研究团队实现了对海量基因组数据的毫秒级检索与比对，显著提升了致病基因挖掘的准确率。',
           descEn: 'Using the Genos foundation model, the research team achieved millisecond-level retrieval and alignment of massive genomic data, significantly improving the accuracy of pathogenic gene mining.',
           stats: [{ value: '99.8%', label: 'Accuracy' }, { value: '<50ms', label: 'Query Time' }],
+          image: '',
         },
       ],
     };
@@ -101,7 +115,7 @@ export default Vue.extend({
 
 <style scoped>
 .cases-heading {
-  font-size: clamp(30px, 5vw, 56px);
+  font-size: clamp(36px, 4.5vw, 60px);
   font-weight: 900;
   letter-spacing: -0.04em;
   color: #0a0c10;
@@ -220,6 +234,20 @@ export default Vue.extend({
   align-items: center;
   justify-content: center;
   background: rgba(0,0,0,0.02);
+  overflow: hidden;
+}
+
+.case-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.case-frame:hover .case-img {
+  transform: scale(1.03);
 }
 
 .slide-case-enter-active, .slide-case-leave-active {

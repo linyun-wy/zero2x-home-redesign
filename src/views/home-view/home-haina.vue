@@ -2,21 +2,29 @@
   <section style="background:#f4f5f7;position:relative;overflow:hidden;">
     <div class="absolute inset-0 pointer-events-none grid-lines" style="z-index:0;"></div>
 
-    <div style="max-width:1320px;margin:0 auto;padding:64px 40px;position:relative;z-index:1;">
+    <div style="max-width:1320px;margin:0 auto;padding:100px 40px 120px;position:relative;z-index:1;">
       <div class="haina-layout">
 
         <!-- 左侧 -->
         <div class="haina-left">
-          <span class="text-micro" style="color:#2e4fff;display:block;margin-bottom:20px;letter-spacing:0.3em;">
+          <span class="text-micro haina-kicker">
             <ScrambleText text="04 / DATA_INFRASTRUCTURE" />
           </span>
 
           <h2 class="haina-heading">
-            <template v-if="lang === 'zh'">海纳<br/>数据枢纽</template>
-            <template v-else>HAINA<br/>DATA NEXUS</template>
+            <template v-if="lang === 'zh'">
+              <SplitReveal text="海纳" :base-delay="0" :stagger="70" />
+              <br />
+              <SplitReveal text="数据枢纽" :base-delay="120" :stagger="70" />
+            </template>
+            <template v-else>
+              <SplitReveal text="HAINA" :base-delay="0" :stagger="55" />
+              <br />
+              <SplitReveal text="DATA NEXUS" :base-delay="140" :stagger="55" />
+            </template>
           </h2>
 
-          <div class="haina-quote">
+          <div class="haina-quote" v-reveal="{ delay: 120, dir: 'left' }">
             <div class="quote-bar"></div>
             <p>
               <template v-if="lang === 'zh'">"以模型为核心组织数据，一切数据Token化"</template>
@@ -26,7 +34,7 @@
         </div>
 
         <!-- 右侧 -->
-        <div class="haina-right">
+        <div class="haina-right" v-reveal="{ delay: 180, dir: 'right' }">
           <div class="haina-card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid rgba(0,0,0,0.07);">
               <span class="text-micro" style="color:#2e4fff;">DATA_FLOW / ACTIVE</span>
@@ -58,10 +66,10 @@
 import Vue from 'vue';
 import { langStore } from '../../lang/index';
 import ScrambleText from '../../components/ScrambleText.vue';
-
+import SplitReveal from '../../components/SplitReveal.vue';
 export default Vue.extend({
   name: 'HomeHaina',
-  components: { ScrambleText },
+  components: { ScrambleText, SplitReveal },
   computed: {
     lang() { return langStore.lang; },
   },
@@ -69,6 +77,13 @@ export default Vue.extend({
 </script>
 
 <style scoped>
+.haina-kicker {
+  color: #2e4fff;
+  display: block;
+  margin-bottom: 20px;
+  letter-spacing: 0.3em;
+}
+
 .haina-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -81,7 +96,7 @@ export default Vue.extend({
 }
 
 .haina-heading {
-  font-size: clamp(40px, 6vw, 80px);
+  font-size: clamp(36px, 4.5vw, 60px);
   font-weight: 900;
   letter-spacing: -0.04em;
   color: #0a0c10;

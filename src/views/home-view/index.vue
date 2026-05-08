@@ -1,5 +1,8 @@
 <template>
   <div class="home-container">
+    <!-- 自定义光标（仅首页）-->
+    <CustomCursor />
+
     <home-zero2x></home-zero2x>
     <home-021></home-021>
     <home-models></home-models>
@@ -11,7 +14,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
 import HomeZero2x from './home-zero2x.vue';
 import Home021 from './home-021.vue';
 import HomeModels from './home-models.vue';
@@ -19,7 +21,7 @@ import HomeHaina from './home-haina.vue';
 import HomeNanhu from './home-nanhu.vue';
 import HomeCases from './home-cases.vue';
 import HomeEvents from './home-events.vue';
-
+import CustomCursor from '../../components/CustomCursor.vue';
 </script>
 
 <style scoped>

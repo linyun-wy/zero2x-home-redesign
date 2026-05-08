@@ -2,18 +2,20 @@
   <section style="background:#fff;position:relative;overflow:hidden;">
     <div class="absolute inset-0 pointer-events-none grid-lines" style="z-index:0;"></div>
 
-    <div style="max-width:1320px;margin:0 auto;padding:40px 40px;position:relative;z-index:1;">
+    <div style="max-width:1320px;margin:0 auto;padding:96px 40px 112px;position:relative;z-index:1;">
 
       <!-- Section 标题 -->
       <div style="margin-bottom:40px;">
         <span class="text-micro" style="color:#2e4fff;display:block;margin-bottom:16px;letter-spacing:0.3em;">
           <ScrambleText text="03 / SCIENTIFIC_INTELLIGENCE" />
         </span>
-        <h2 class="section-heading">{{ lang === 'zh' ? '基础科学模型' : 'FOUNDATION SCIENCE MODEL' }}</h2>
+        <h2 class="section-heading">
+          <SplitReveal :text="lang === 'zh' ? '科学基础模型' : 'SCIENCE FOUNDATION MODEL'" />
+        </h2>
       </div>
 
       <!-- 021 Foundation Model：左侧正文 + 右侧「了解更多」（不占额外一行高度） -->
-      <a href="#" class="model-feature-link card-hover" @click.prevent style="margin-bottom:40px;">
+      <a href="#" class="model-feature-link card-hover" @click.prevent style="margin-bottom:40px;" v-reveal="{ delay: 100 }" data-cursor="view">
         <div class="model-feature-inner">
           <div class="model-feature-main">
             <div class="model-feature-stack">
@@ -44,16 +46,20 @@
         <span class="text-micro domain-section-kicker">
           <ScrambleText text="03.2 / SPECIALIZED" />
         </span>
-        <h3 class="domain-heading">{{ lang === 'zh' ? '领域科学模型' : 'DOMAIN SCIENCE MODELS' }}</h3>
+        <h3 class="domain-heading">
+          <SplitReveal :text="lang === 'zh' ? '领域科学模型' : 'DOMAIN SCIENCE MODELS'" :base-delay="60" />
+        </h3>
       </div>
 
       <!-- Domain Model Cards -->
       <div class="domain-grid">
         <a
-          v-for="model in models"
+          v-for="(model, mi) in models"
           :key="model.key"
           href="#"
           class="domain-card"
+          v-reveal="{ delay: mi * 90 + 120 }"
+          data-cursor="view"
         >
           <div class="domain-card-brand">
             <span class="text-micro domain-card-tag">{{ model.tag }}</span>
@@ -93,10 +99,11 @@ import logoGeoGPT from '../../assets/models/model_1.png';
 import logoOneAstronomy from '../../assets/models/model_2.png';
 import logoOnePorous from '../../assets/models/model_3.png';
 import logoGenos from '../../assets/models/model_4.png';
+import SplitReveal from '../../components/SplitReveal.vue';
 
 export default Vue.extend({
   name: 'HomeModels',
-  components: { ScrambleText },
+  components: { ScrambleText, SplitReveal },
   computed: {
     lang() { return langStore.lang; },
   },
@@ -148,9 +155,9 @@ export default Vue.extend({
 </script>
 
 <style scoped>
-/* 基础科学模型标题：与 domain-heading 大小一致 */
+/* 科学基础模型区块标题；领域科学模型（domain-heading）与之同字号 */
 .section-heading {
-  font-size: clamp(22px, 3vw, 36px);
+  font-size: clamp(36px, 4.5vw, 60px);
   font-weight: 800;
   letter-spacing: -0.03em;
   color: #0a0c10;
@@ -243,7 +250,7 @@ export default Vue.extend({
 }
 
 .domain-heading {
-  font-size: clamp(22px, 3vw, 36px);
+  font-size: clamp(36px, 4.5vw, 60px);
   font-weight: 800;
   letter-spacing: -0.03em;
   color: #0a0c10;

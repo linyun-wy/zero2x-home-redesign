@@ -7,32 +7,36 @@
 
     <!-- 渐变遮罩 + 网格线 -->
     <div class="absolute inset-0 pointer-events-none grid-lines-dark" style="z-index:1;"></div>
-    <div class="absolute inset-0 pointer-events-none hero-gradient-veil" style="z-index:2;"></div>
 
-    <!-- 内容区域 -->
-    <div class="relative w-full max-w-7xl mx-auto px-8 flex flex-col justify-center hero-inner" style="z-index:10;">
+    <!-- 彩色渐变光晕层：多色 blob 在字符矩阵上漂移并循环色相，形成 GradientDots 参考效果 -->
+    <div class="hero-color-drift absolute inset-0 pointer-events-none" style="z-index:2;" aria-hidden="true">
+      <div class="hcd-blob hcd-blob-1"></div>
+      <div class="hcd-blob hcd-blob-2"></div>
+      <div class="hcd-blob hcd-blob-3"></div>
+      <div class="hcd-blob hcd-blob-4"></div>
+    </div>
 
-      <!-- 品牌色小标签 -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-        <div class="brand-dot"></div>
-        <span class="text-micro" style="color:var(--brand-blue-400);letter-spacing:0.3em;">{{ lang === 'zh' ? 'AI 驱动科研平台' : 'AI-POWERED RESEARCH PLATFORM' }}</span>
-      </div>
+    <div class="absolute inset-0 pointer-events-none hero-gradient-veil" style="z-index:3;"></div>
+
+    <!-- 内容区域（水平居中） -->
+    <div class="relative w-full max-w-7xl mx-auto px-8 flex flex-col items-center justify-center hero-inner" style="z-index:10;">
 
       <!-- zero2x 主logo文字 + 仅作用于 logo 范围的扫描高光 -->
-      <div class="zero2x-wrapper" style="margin-bottom:12px;">
+      <div class="zero2x-wrapper" style="margin-bottom:0;">
         <div class="zero2x-fill"></div>
         <span class="zero2x-text">zero2x</span>
         <!-- 细扫描线在字形之上（非整块背景渐变） -->
         <div class="zero2x-scan-line" aria-hidden="true" />
       </div>
 
-      <!-- 中英文 tagline -->
+      <!-- 中英文 tagline（暂时隐藏）
       <div class="hero-taglines">
         <p class="tagline-primary">{{ t('hero.tagline') }}</p>
         <p class="tagline-secondary">{{ t('hero.tagline2') }}</p>
       </div>
+      -->
 
-      <!-- 品牌色数据指标（磨砂底避免与矩阵糊在一起） -->
+      <!-- 品牌色数据指标（暂时隐藏）
       <div class="hero-stats">
         <div class="hero-stat">
           <span class="hero-stat-val">200<span style="color:var(--brand-blue-400);">+</span></span>
@@ -49,6 +53,7 @@
           <span class="hero-stat-label">{{ lang === 'zh' ? '科学基础模型' : 'SCIENCE MODEL' }}</span>
         </div>
       </div>
+      -->
     </div>
   </section>
 </template>
@@ -91,10 +96,82 @@ export default Vue.extend({
 .hero-gradient-veil {
   background: linear-gradient(
     135deg,
-    rgba(5, 12, 26, 0.92) 0%,
-    rgba(10, 18, 46, 0.84) 48%,
-    rgba(5, 12, 26, 0.93) 100%
+    rgba(5, 12, 26, 0.68) 0%,
+    rgba(10, 18, 46, 0.60) 48%,
+    rgba(5, 12, 26, 0.68) 100%
   );
+}
+
+/* ── 彩色渐变光晕层 ──────────────────────────────────── */
+/* mix-blend-mode: screen 使光晕仅对字符矩阵着色，暗背景保持黑色 */
+.hero-color-drift {
+  mix-blend-mode: screen;
+  animation: hero-hue-cycle 8s linear infinite;
+}
+
+.hcd-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(52px);
+}
+
+.hcd-blob-1 {
+  width: 62%;
+  height: 85%;
+  background: radial-gradient(ellipse at center, rgba(255, 28, 110, 0.88) 0%, transparent 68%);
+  animation: hero-blob-1 28s ease-in-out infinite;
+}
+
+.hcd-blob-2 {
+  width: 56%;
+  height: 80%;
+  background: radial-gradient(ellipse at center, rgba(90, 20, 255, 0.84) 0%, transparent 68%);
+  animation: hero-blob-2 34s ease-in-out infinite;
+}
+
+.hcd-blob-3 {
+  width: 58%;
+  height: 70%;
+  background: radial-gradient(ellipse at center, rgba(0, 210, 255, 0.78) 0%, transparent 68%);
+  animation: hero-blob-3 24s ease-in-out infinite;
+}
+
+.hcd-blob-4 {
+  width: 52%;
+  height: 75%;
+  background: radial-gradient(ellipse at center, rgba(120, 255, 80, 0.65) 0%, transparent 62%);
+  animation: hero-blob-4 38s ease-in-out infinite;
+}
+
+@keyframes hero-blob-1 {
+  0%, 100% { top: 5%;  left: 8%; }
+  25%       { top: 55%; left: 55%; }
+  50%       { top: 20%; left: 72%; }
+  75%       { top: 65%; left: 18%; }
+}
+
+@keyframes hero-blob-2 {
+  0%, 100% { top: 45%; left: 58%; }
+  33%       { top: 5%;  left: 75%; }
+  66%       { top: 72%; left: 5%; }
+}
+
+@keyframes hero-blob-3 {
+  0%, 100% { top: 68%; left: 38%; }
+  33%       { top: 15%; left: 5%; }
+  66%       { top: 42%; left: 78%; }
+}
+
+@keyframes hero-blob-4 {
+  0%, 100% { top: 18%; left: 68%; }
+  25%       { top: 78%; left: 28%; }
+  50%       { top: 38%; left: 8%; }
+  75%       { top: 8%;  left: 48%; }
+}
+
+@keyframes hero-hue-cycle {
+  from { filter: hue-rotate(0deg); }
+  to   { filter: hue-rotate(360deg); }
 }
 
 /* zero2x 反色 wrapper — 宽度紧贴文字，不撑满 */
@@ -105,7 +182,7 @@ export default Vue.extend({
   cursor: crosshair;
   line-height: 1;
   width: fit-content;
-  align-self: flex-start;
+  align-self: center;
   isolation: isolate;
 }
 
@@ -175,8 +252,7 @@ export default Vue.extend({
   font-weight: 900;
   letter-spacing: -0.04em;
   color: #ffffff;
-  font-family: 'Inter', sans-serif;
-  text-transform: uppercase;
+  font-family: var(--font-display, 'Space Grotesk', 'Noto Sans SC', sans-serif);
   animation: glow-breathe 4s ease-in-out infinite;
   line-height: 1;
   white-space: nowrap;
@@ -195,6 +271,7 @@ export default Vue.extend({
 
 .hero-taglines {
   max-width: 42rem;
+  text-align: center;
 }
 
 .tagline-primary {
@@ -228,7 +305,7 @@ export default Vue.extend({
   gap: 0;
   margin-top: 22px;
   padding: 14px 22px;
-  align-self: flex-start;
+  align-self: center;
   background: rgba(5, 10, 22, 0.72);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -241,6 +318,8 @@ export default Vue.extend({
 .hero-stat {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: 8px;
   padding: 0 28px 0 0;
 }

@@ -1,11 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Space Grotesk：大标题英文显示字体，比 Inter 更具辨识度 */
+/* Noto Sans SC：中英正文统一字体，中文覆盖完整，消除豆腐块 */
+/* JetBrains Mono：保留，用于 Mono 标签和代码 */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 /* Enable class-based dark mode for Tailwind v4 */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* 正文：Noto Sans SC 中英兼容，Latin 字符也由 Noto 覆盖 */
+  --font-sans: "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
+  /* 显示标题：Space Grotesk 处理 Latin，Noto Sans SC 兜底 CJK */
+  --font-display: "Space Grotesk", "Noto Sans SC", ui-sans-serif, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
   
   --color-primary: #2e4fff;
@@ -69,16 +75,27 @@
     @apply font-sans antialiased;
     color: var(--text-primary);
     background-color: var(--bg-page);
-    cursor: crosshair;
+    cursor: default;
   }
 
-  input, textarea, button, a {
+  /* 输入类元素恢复文字光标 */
+  input, textarea {
+    cursor: text;
+  }
+
+  /* 可交互元素保留品牌十字光标 */
+  button, a {
     cursor: crosshair;
   }
 
   input::placeholder {
     color: var(--text-placeholder);
   }
+}
+
+/* ── 全局标题字体：Space Grotesk (EN) + Noto Sans SC (ZH) ── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
 }
 
 /* ── Brand Color Tokens ── */
@@ -214,6 +231,30 @@
 @keyframes shimmer {
   0%   { background-position: -200% center; }
   100% { background-position: 200% center; }
+}
+
+/* ── Scroll reveal（v-reveal 指令配套样式） ──
+   入场方向：
+     rv--up    — 从下方 28px 滑入（默认）
+     rv--left  — 从左侧 24px 滑入
+     rv--right — 从右侧 24px 滑入
+     rv--fade  — 仅淡入（无位移）
+*/
+.rv {
+  opacity: 0;
+  transition:
+    opacity 0.65s var(--ease-out) var(--rv-delay, 0ms),
+    transform 0.65s var(--ease-out) var(--rv-delay, 0ms);
+  will-change: opacity, transform;
+}
+.rv--up    { transform: translateY(28px); }
+.rv--left  { transform: translateX(-24px); }
+.rv--right { transform: translateX(24px); }
+.rv--fade  { transform: none; }
+.rv.rv--on { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rv { opacity: 1 !important; transform: none !important; transition: none !important; }
 }
 
 /* Thin custom scrollbar */

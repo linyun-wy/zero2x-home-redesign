@@ -1,5 +1,5 @@
 <template>
-  <!-- 字符颗粒仅在「ZERO2X」字形区域内生成；跟随鼠标位置即时重绘 -->
+  <!-- 字符颗粒仅在「zero2x」字形区域内生成；跟随鼠标位置即时重绘 -->
   <div class="ascii-grain-root absolute inset-0 overflow-hidden pointer-events-none select-none" ref="root">
     <div class="ascii-grain-stage">
       <pre class="ascii-grain-pre" :style="preStyle">{{ gridText }}</pre>
@@ -12,14 +12,14 @@
 <script lang="ts">
 import Vue from 'vue';
 
-const GRAIN_CHARS =
-  "·.·',`´¨^~¯˘˙°:;,_-|\\/+=*#%&$@!?<>[]{}()0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-/** 全大写字标，与视觉品牌一致 */
-const LOGO_TEXT = 'ZERO2X';
-
 const CELL_W = 6;
 const CELL_H = 12;
+
+/** 字标轮廓（Canvas 蒙版） */
+const LOGO_TEXT = 'zero2x';
+
+/** 蒙版区域内仅循环使用这些字符，形成「zero2x」氛围矩阵 */
+const LOGO_GRAIN = 'zero2x';
 
 export default Vue.extend({
   name: 'AsciiGrainBackdrop',
@@ -152,7 +152,7 @@ export default Vue.extend({
 
       const threshold = 0.14;
       const mask = new Uint8Array(this.cols * this.rows);
-      const len = GRAIN_CHARS.length;
+      const patLen = LOGO_GRAIN.length;
 
       let grid = '';
       for (let r = 0; r < this.rows; r++) {
@@ -170,7 +170,7 @@ export default Vue.extend({
           const idx = r * this.cols + c;
           if (L > threshold) {
             mask[idx] = 1;
-            grid += GRAIN_CHARS[(Math.random() * len) | 0];
+            grid += LOGO_GRAIN[idx % patLen];
           } else {
             mask[idx] = 0;
             grid += ' ';
@@ -211,7 +211,7 @@ export default Vue.extend({
       let lines = this.gridText.split('\n').slice(0, this.rows);
       while (lines.length < this.rows) lines.push('');
 
-      const len = GRAIN_CHARS.length;
+      const gLen = LOGO_GRAIN.length;
       const cx = this.logoAnchorCol;
       const cy = this.logoAnchorRow;
 
@@ -233,11 +233,11 @@ export default Vue.extend({
             0.1 * Math.sin(Date.now() * 0.0014 + dCenter * 0.06);
 
           if (dMouse < 12 && Math.random() > 0.42) {
-            out += GRAIN_CHARS[(Math.random() * len) | 0];
+            out += LOGO_GRAIN[(Math.random() * gLen) | 0];
           } else if (Math.random() > wave) {
-            out += GRAIN_CHARS[(Math.random() * len) | 0];
+            out += LOGO_GRAIN[(Math.random() * gLen) | 0];
           } else if (Math.random() > 0.996) {
-            out += GRAIN_CHARS[(Math.random() * len) | 0];
+            out += LOGO_GRAIN[(Math.random() * gLen) | 0];
           } else {
             out += ch;
           }

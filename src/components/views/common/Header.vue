@@ -470,7 +470,7 @@ export default Vue.extend({
   font-size: clamp(17px, 1.85vw, 21px);
   font-weight: 900;
   letter-spacing: -0.04em;
-  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-display, 'Space Grotesk', 'Noto Sans SC', sans-serif);
   color: var(--brand-blue-600, #2e4fff);
   line-height: 1;
   white-space: nowrap;
@@ -661,8 +661,8 @@ export default Vue.extend({
 }
 
 .nav-cell:hover {
-  background: #0a0c10;
-  color: #f9faf9;
+  background: var(--brand-blue-600, #2e4fff);
+  color: #ffffff;
 }
 
 .nav-cell:hover::after {
@@ -684,7 +684,7 @@ export default Vue.extend({
 }
 
 .nav-cell:not(.active):hover {
-  background: #0a0c10;
+  background: var(--brand-blue-600, #2e4fff);
   color: #ffffff;
 }
 

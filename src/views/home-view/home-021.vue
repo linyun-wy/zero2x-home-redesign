@@ -3,28 +3,28 @@
     <!-- 网格线 -->
     <div class="absolute inset-0 pointer-events-none grid-lines" style="z-index:0;"></div>
 
-    <div style="max-width:1320px;margin:0 auto;padding:36px 40px 48px;position:relative;z-index:1;">
+    <div style="max-width:1320px;margin:0 auto;padding:96px 40px 112px;position:relative;z-index:1;">
       <div class="lab-layout">
 
         <!-- 左侧文字 -->
         <div class="lab-text">
-          <!-- 小标签 -->
-          <span class="text-micro" style="color:#2e4fff;display:block;margin-bottom:20px;letter-spacing:0.3em;">
-            <ScrambleText text="02.1 / AI WORKBENCH" />
+          <span class="text-micro lab-kicker">
+            <ScrambleText text="02 / AI WORKBENCH" />
           </span>
+          <h2 class="lab-heading">
+            <SplitReveal :text="t('hero.labTitle')" />
+          </h2>
 
-          <h2 class="lab-heading">zero2x Lab</h2>
-
-          <p class="lab-desc">
+          <p class="lab-desc" v-reveal="{ delay: 100, dir: 'left' }">
             <template v-if="lang === 'zh'">
-              zero2x Lab 是一款面向科研场景的 <strong>AI 驱动一体化科研工作台</strong>，覆盖"提出问题 → 数据获取 → 分析执行 → 报告输出"的科研全流程闭环。
+              02X Lab 是一款面向科研场景的 <strong>AI 驱动一体化科研工作台</strong>，覆盖"提出问题 → 数据获取 → 分析执行 → 报告输出"的科研全流程闭环。
             </template>
             <template v-else>
-              zero2x Lab is an <strong>AI-Powered Workbench for Scientific Research</strong>. It delivers a closed-loop, end-to-end research experience covering Problem Definition → Data Acquisition → Analysis Execution → Report Output.
+              02X Lab is an <strong>AI-Powered Workbench for Scientific Research</strong>. It delivers a closed-loop, end-to-end research experience covering Problem Definition → Data Acquisition → Analysis Execution → Report Output.
             </template>
           </p>
 
-          <ul class="lab-list">
+          <ul class="lab-list" v-reveal="{ delay: 180, dir: 'left' }">
             <li v-if="lang === 'zh'">
               <span class="list-marker"></span>
               <div><strong>全流程闭环</strong> — 从问题到成果一站直达，无需多工具切换。</div>
@@ -51,8 +51,8 @@
             </li>
           </ul>
 
-          <button class="lab-cta">
-            {{ lang === 'zh' ? '查看更多' : 'LEARN MORE' }}
+          <button class="lab-cta" v-reveal="{ delay: 260, dir: 'left' }" data-cursor="view">
+            {{ lang === 'zh' ? '立即体验' : 'Start now' }}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:8px;transition:transform 0.2s;">
               <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
@@ -60,7 +60,7 @@
         </div>
 
         <!-- 右侧图片占位 -->
-        <div class="lab-visual card-hover">
+        <div class="lab-visual card-hover" v-reveal="{ delay: 160, dir: 'right' }" data-cursor="view">
           <div class="visual-frame">
             <div class="visual-chrome">
               <div class="chrome-dots">
@@ -84,19 +84,30 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { langStore } from '../../lang/index';
+import { langStore, t } from '../../lang/index';
 import ScrambleText from '../../components/ScrambleText.vue';
-
+import SplitReveal from '../../components/SplitReveal.vue';
 export default Vue.extend({
   name: 'Home021',
-  components: { ScrambleText },
+  components: { ScrambleText, SplitReveal },
   computed: {
     lang() { return langStore.lang; },
+  },
+  methods: {
+    t(key: string) { return t(key); },
   },
 });
 </script>
 
 <style scoped>
+/* 与 models / haina 等区块的 text-micro 角标一致 */
+.lab-kicker {
+  display: block;
+  margin-bottom: 16px;
+  color: #2e4fff;
+  letter-spacing: 0.3em;
+}
+
 .lab-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -109,15 +120,14 @@ export default Vue.extend({
 }
 
 /* 文字区 */
+/* 与「科学基础模型」「领域科学模型」.section-heading / .domain-heading 一致 */
 .lab-heading {
-  font-size: clamp(28px, 4vw, 52px);
-  font-weight: 900;
-  letter-spacing: -0.04em;
+  font-size: clamp(36px, 4.5vw, 60px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
   color: #0a0c10;
   margin: 0 0 24px;
   line-height: 1;
-  text-transform: uppercase;
-  animation: fade-in-up 0.7s var(--ease-out) 0.1s both;
 }
 
 .lab-desc {
