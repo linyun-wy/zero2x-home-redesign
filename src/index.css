@@ -1,7 +1,7 @@
-/* Space Grotesk：大标题英文显示字体，比 Inter 更具辨识度 */
+/* Plus Jakarta Sans：大标题 / 显示用拉丁字形，几何感强，接近品牌主视觉 */
 /* Noto Sans SC：中英正文统一字体，中文覆盖完整，消除豆腐块 */
 /* JetBrains Mono：保留，用于 Mono 标签和代码 */
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 /* Enable class-based dark mode for Tailwind v4 */
@@ -10,8 +10,8 @@
 @theme {
   /* 正文：Noto Sans SC 中英兼容，Latin 字符也由 Noto 覆盖 */
   --font-sans: "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
-  /* 显示标题：Space Grotesk 处理 Latin，Noto Sans SC 兜底 CJK */
-  --font-display: "Space Grotesk", "Noto Sans SC", ui-sans-serif, sans-serif;
+  /* 显示标题：Plus Jakarta Sans（Latin）+ Noto Sans SC（CJK） */
+  --font-display: "Plus Jakarta Sans", "Noto Sans SC", ui-sans-serif, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
   
   --color-primary: #2e4fff;
@@ -93,7 +93,7 @@
   }
 }
 
-/* ── 全局标题字体：Space Grotesk (EN) + Noto Sans SC (ZH) ── */
+/* ── 全局标题字体：Plus Jakarta Sans (EN) + Noto Sans SC (ZH) ── */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
 }

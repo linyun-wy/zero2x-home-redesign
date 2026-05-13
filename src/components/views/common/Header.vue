@@ -64,16 +64,29 @@
               </svg>
             </button>
             <div v-show="navDropdownOpenKey === item.key" class="hdr-panel hdr-panel--nav">
-              <a
-                v-for="sub in item.dropdown"
-                :key="sub.key"
-                href="javascript:void(0);"
-                class="hdr-item hdr-item--link"
-                :class="{ 'hdr-item--active': isNavSubActive(item.key, sub.key) }"
-                @click.prevent="selectNavSub(item.key, sub.key)"
-              >
-                {{ sub.label }}
-              </a>
+              <template v-for="sub in item.dropdown">
+                <a
+                  v-if="sub.externalUrl"
+                  :key="sub.key + '-ext'"
+                  :href="sub.externalUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="hdr-item hdr-item--link hdr-item--row"
+                  @click="navDropdownOpenKey = null"
+                >
+                  {{ sub.labelKey ? t(sub.labelKey) : sub.label }}
+                </a>
+                <a
+                  v-else
+                  :key="sub.key"
+                  href="javascript:void(0);"
+                  class="hdr-item hdr-item--link hdr-item--row"
+                  :class="{ 'hdr-item--active': isNavSubActive(item.key, sub.key) }"
+                  @click.prevent="selectNavSub(item.key, sub.key)"
+                >
+                  {{ sub.labelKey ? t(sub.labelKey) : sub.label }}
+                </a>
+              </template>
             </div>
           </div>
           <!-- 普通项 -->
@@ -98,12 +111,52 @@
         <button class="action-cell lang-btn" @click="handleLangSwitch" :title="lang === 'zh' ? '切换英文' : 'Switch to Chinese'">
           <span class="text-micro">{{ lang === 'zh' ? 'EN' : '中文' }}</span>
         </button>
-        <button class="action-cell" title="登录">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
+
+        <button
+          v-if="!isLoggedIn"
+          type="button"
+          class="sign-in-btn"
+          @click="onSignInClick"
+        >
+          {{ t('header.signIn') }}
         </button>
+
+        <div v-else class="user-slot" ref="userMenuRoot">
+          <button
+            type="button"
+            class="user-trigger"
+            :class="{ 'user-trigger--open': userMenuOpen }"
+            :aria-expanded="userMenuOpen"
+            :aria-haspopup="true"
+            :aria-label="t('header.settings')"
+            @click.stop="userMenuOpen = !userMenuOpen"
+          >
+            <span class="user-avatar-ring">
+              <span class="user-avatar" :style="{ background: avatarBg }">{{ userInitials }}</span>
+            </span>
+            <svg class="hdr-caret hdr-caret--user" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+              <path fill="currentColor" d="M5 2.5 L8 6 H2 Z" />
+            </svg>
+          </button>
+          <div v-show="userMenuOpen" class="hdr-panel hdr-panel--user" role="menu" @click.stop>
+            <button type="button" class="hdr-item hdr-item--row" role="menuitem" @click="onUserSettings">
+              <svg class="user-menu-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <rect x="4" y="4" width="16" height="16" rx="2" />
+                <circle cx="12" cy="10" r="2.5" />
+                <path d="M8 17c0-2.2 1.8-4 4-4s4 1.8 4 4" />
+              </svg>
+              {{ t('header.settings') }}
+            </button>
+            <button type="button" class="hdr-item hdr-item--row" role="menuitem" @click="onUserLogout">
+              <svg class="user-menu-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                <path d="M16 17l5-5-5-5"/>
+                <path d="M21 12H9"/>
+              </svg>
+              {{ t('header.logout') }}
+            </button>
+          </div>
+        </div>
       </div>
 
       <button class="mobile-toggle" @click="mobileOpen = !mobileOpen" :aria-expanded="mobileOpen">
@@ -143,16 +196,29 @@
             <span class="mobile-chevron" :class="{ open: mobileExpandedKey === item.key }">›</span>
           </button>
           <div v-show="mobileExpandedKey === item.key" class="mobile-sub">
-            <a
-              v-for="sub in item.dropdown"
-              :key="sub.key"
-              href="javascript:void(0);"
-              class="mobile-cell mobile-sub-cell"
-              :class="{ active: isNavSubActive(item.key, sub.key) }"
-              @click="selectNavSub(item.key, sub.key); mobileOpen = false"
-            >
-              {{ sub.label }}
-            </a>
+            <template v-for="sub in item.dropdown">
+              <a
+                v-if="sub.externalUrl"
+                :key="sub.key + '-ext'"
+                :href="sub.externalUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="mobile-cell mobile-sub-cell"
+                @click="mobileOpen = false"
+              >
+                {{ sub.labelKey ? t(sub.labelKey) : sub.label }}
+              </a>
+              <a
+                v-else
+                :key="sub.key"
+                href="javascript:void(0);"
+                class="mobile-cell mobile-sub-cell"
+                :class="{ active: isNavSubActive(item.key, sub.key) }"
+                @click.prevent="selectNavSub(item.key, sub.key); mobileOpen = false"
+              >
+                {{ sub.labelKey ? t(sub.labelKey) : sub.label }}
+              </a>
+            </template>
           </div>
         </div>
         <a
@@ -166,6 +232,25 @@
           {{ t('nav.' + item.key) }}
         </a>
       </template>
+
+      <div v-if="isLoggedIn" class="mobile-user-block">
+        <div class="mobile-cell mobile-cell--static">{{ userInitials }} · {{ userDisplayName }}</div>
+        <button type="button" class="mobile-cell" @click="onUserSettings(); mobileOpen = false">
+          {{ t('header.settings') }}
+        </button>
+        <button type="button" class="mobile-cell" @click="onUserLogout(); mobileOpen = false">
+          {{ t('header.logout') }}
+        </button>
+      </div>
+      <button
+        v-else
+        type="button"
+        class="mobile-cell"
+        style="justify-content:center;color:#2e4fff;font-weight:600;"
+        @click="onSignInClick(); mobileOpen = false"
+      >
+        {{ t('header.signIn') }}
+      </button>
 
       <div class="mobile-cell" style="color:#2e4fff;" @click="handleLangSwitch">
         {{ lang === 'zh' ? 'Switch to English' : '切换到中文' }}
@@ -190,11 +275,42 @@ const SITE_TIMEZONES: Record<SiteKey, string> = {
 };
 
 type ModelSubKey = 'm021' | 'geogpt' | 'oneastronomy' | 'genos' | 'oneporous';
-type LabSubKey = 'lab02x' | 'oneearth';
+
+const AVATAR_COLORS = [
+  '#6B4D3D',
+  '#294175',
+  '#416B69',
+  '#D09030',
+  '#C1542B',
+  '#2D9C6A',
+  '#74427D',
+  '#CE5069',
+  '#E6B220',
+  '#2AA8A8',
+  '#A83D97',
+  '#8CBF3D',
+  '#4D2E8C',
+  '#FFA726',
+  '#3D8C8C',
+  '#6B8C3D',
+];
+
+function getAvatarColor(username: string): string {
+  if (!username) return AVATAR_COLORS[0];
+  const hash = username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
+}
+
+interface NavSubItem {
+  key: string;
+  label?: string;
+  labelKey?: string;
+  externalUrl?: string;
+}
 
 interface NavDropdownItem {
   key: string;
-  dropdown: { key: string; label: string }[];
+  dropdown: NavSubItem[];
 }
 
 interface NavLinkItem {
@@ -214,8 +330,13 @@ export default Vue.extend({
       timer: null as ReturnType<typeof setInterval> | null,
       navDropdownLeaveTimer: null as ReturnType<typeof setTimeout> | null,
       navDropdownOpenKey: null as string | null,
+      userMenuOpen: false,
+      isLoggedIn: true,
+      /** 与线上一致：用于头像缩写与颜色哈希（默认展示 WA） */
+      userDisplayName: 'Wang Admin',
       navItems: [
         { key: 'home' },
+        { key: 'lab' },
         {
           key: 'models',
           dropdown: [
@@ -226,22 +347,20 @@ export default Vue.extend({
             { key: 'oneporous', label: 'OnePorous' },
           ],
         },
+        { key: 'data' },
         {
-          key: 'products',
+          key: 'cases',
           dropdown: [
-            { key: 'lab02x', label: '02X Lab' },
-            { key: 'oneearth', label: 'OneEarth' },
+            { key: 'science', labelKey: 'nav.casesScience' },
+            { key: 'itu', labelKey: 'nav.casesITU', externalUrl: 'https://ai4g.zero2x.org/' },
           ],
         },
-        { key: 'data' },
-        { key: 'cases' },
         { key: 'news' },
         { key: 'events' },
       ] as (NavLinkItem | NavDropdownItem)[],
       selectedSite: 'cn' as SiteKey,
       siteOpen: false,
       activeModelKey: 'geogpt' as ModelSubKey,
-      activeLabKey: 'lab02x' as LabSubKey,
       siteOptions: [
         { key: 'cn' as SiteKey, labelKey: 'header.siteChina' },
         { key: 'sg' as SiteKey, labelKey: 'header.siteSingapore' },
@@ -269,6 +388,17 @@ export default Vue.extend({
       };
       return t(map[this.selectedSite]);
     },
+    userInitials(): string {
+      const name = this.userDisplayName.trim() || 'User';
+      const parts = name.split(/\s+/).filter(Boolean);
+      if (parts.length >= 2) {
+        return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+      }
+      return name.slice(0, 2).toUpperCase() || 'U';
+    },
+    avatarBg(): string {
+      return getAvatarColor(this.userDisplayName);
+    },
   },
   mounted() {
     try {
@@ -282,21 +412,22 @@ export default Vue.extend({
       if (pk && (modelAllowed as string[]).includes(pk)) {
         this.activeModelKey = pk as ModelSubKey;
       }
-      const lab = localStorage.getItem('zero2x-lab');
-      if (lab === 'lab02x' || lab === 'oneearth') {
-        this.activeLabKey = lab as LabSubKey;
-      }
+      const dn = localStorage.getItem('zero2x-user-display-name');
+      if (dn && dn.trim()) this.userDisplayName = dn.trim();
+      const li = localStorage.getItem('zero2x-header-logged-in');
+      if (li === '0') this.isLoggedIn = false;
+      if (li === '1') this.isLoggedIn = true;
     } catch (_) {
       /* ignore */
     }
     this.updateTime();
     this.timer = setInterval(this.updateTime, 1000);
-    document.addEventListener('click', this.closeSiteDropdown);
+    document.addEventListener('click', this.closeOutsideMenus);
   },
   beforeDestroy() {
     if (this.timer) clearInterval(this.timer);
     if (this.navDropdownLeaveTimer) clearTimeout(this.navDropdownLeaveTimer);
-    document.removeEventListener('click', this.closeSiteDropdown);
+    document.removeEventListener('click', this.closeOutsideMenus);
   },
   methods: {
     t(key: string) {
@@ -304,6 +435,26 @@ export default Vue.extend({
     },
     handleLangSwitch() {
       toggleLang();
+    },
+    onUserSettings() {
+      this.userMenuOpen = false;
+    },
+    onUserLogout() {
+      this.userMenuOpen = false;
+      this.isLoggedIn = false;
+      try {
+        localStorage.setItem('zero2x-header-logged-in', '0');
+      } catch (_) {
+        /* ignore */
+      }
+    },
+    onSignInClick() {
+      this.isLoggedIn = true;
+      try {
+        localStorage.setItem('zero2x-header-logged-in', '1');
+      } catch (_) {
+        /* ignore */
+      }
     },
     formatUtcOffsetLabel(timeZone: string, date: Date): string {
       try {
@@ -342,6 +493,7 @@ export default Vue.extend({
       }
     },
     selectNavSub(navKey: string, subKey: string) {
+      this.navDropdownOpenKey = null;
       if (navKey === 'models') {
         this.activeModelKey = subKey as ModelSubKey;
         this.activeNav = 'models';
@@ -350,19 +502,14 @@ export default Vue.extend({
         } catch (_) {
           /* ignore */
         }
-      } else if (navKey === 'products') {
-        this.activeLabKey = subKey as LabSubKey;
-        this.activeNav = 'products';
-        try {
-          localStorage.setItem('zero2x-lab', subKey);
-        } catch (_) {
-          /* ignore */
-        }
+      } else if (navKey === 'cases' && subKey === 'science') {
+        this.activeNav = 'cases';
+        this.$router.push({ path: '/', hash: '#section-cases' }).catch(() => {});
       }
     },
     isNavSubActive(navKey: string, subKey: string): boolean {
       if (navKey === 'models') return this.activeModelKey === subKey;
-      if (navKey === 'products') return this.activeLabKey === subKey;
+      if (navKey === 'cases') return subKey === 'science' && this.activeNav === 'cases';
       return false;
     },
     onNavDropdownEnter(key: string) {
@@ -377,11 +524,15 @@ export default Vue.extend({
         this.navDropdownOpenKey = null;
       }, 240);
     },
-    closeSiteDropdown(e: MouseEvent) {
-      const root = this.$refs.siteDropdownRoot as HTMLElement | undefined;
-      if (!root || !this.siteOpen) return;
-      if (root.contains(e.target as Node)) return;
-      this.siteOpen = false;
+    closeOutsideMenus(e: MouseEvent) {
+      const siteRoot = this.$refs.siteDropdownRoot as HTMLElement | undefined;
+      const userRoot = this.$refs.userMenuRoot as HTMLElement | undefined;
+      if (this.siteOpen && siteRoot && !siteRoot.contains(e.target as Node)) {
+        this.siteOpen = false;
+      }
+      if (this.userMenuOpen && userRoot && !userRoot.contains(e.target as Node)) {
+        this.userMenuOpen = false;
+      }
     },
     isPlainNavActive(key: string): boolean {
       if (key === 'home') {
@@ -389,6 +540,9 @@ export default Vue.extend({
       }
       if (key === 'data') {
         return this.$route.path === '/data';
+      }
+      if (key === 'lab') {
+        return this.activeNav === 'lab' || this.$route.path.startsWith('/lab');
       }
       return this.activeNav === key;
     },
@@ -400,6 +554,8 @@ export default Vue.extend({
         this.$router.push({ path: '/' }).catch(() => {});
       } else if (key === 'data') {
         this.$router.push({ path: '/data' }).catch(() => {});
+      } else if (key === 'lab') {
+        this.$router.push({ path: '/lab/genos' }).catch(() => {});
       } else if (key === 'cases') {
         this.$router.push({ path: '/', hash: '#section-cases' }).catch(() => {});
       } else if (key === 'events') {
@@ -413,6 +569,10 @@ export default Vue.extend({
       const hash = this.$route.hash || '';
       if (path === '/data') {
         this.activeNav = 'data';
+        return;
+      }
+      if (path.startsWith('/lab')) {
+        this.activeNav = 'lab';
         return;
       }
       if (path === '/') {
@@ -436,6 +596,8 @@ export default Vue.extend({
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(12px);
   overflow: visible;
+  /* 视觉评审：导航/下拉等 UI 铬层用正文栈 Noto Sans SC，与 logo 的展示字体区分 */
+  font-family: var(--font-sans, 'Noto Sans SC', ui-sans-serif, system-ui, sans-serif);
 }
 
 .header-inner {
@@ -470,7 +632,7 @@ export default Vue.extend({
   font-size: clamp(17px, 1.85vw, 21px);
   font-weight: 900;
   letter-spacing: -0.04em;
-  font-family: var(--font-display, 'Space Grotesk', 'Noto Sans SC', sans-serif);
+  font-family: var(--font-display, 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif);
   color: var(--brand-blue-600, #2e4fff);
   line-height: 1;
   white-space: nowrap;
@@ -573,10 +735,13 @@ export default Vue.extend({
   transform: translateX(-50%);
 }
 
-/* 与对应导航格水平居中对齐（相对 .nav-dropdown / .site-slot 定位包含块） */
+/* 与对应导航格水平居中对齐；宽度至少与入口格一致，避免「案例」等过窄 */
 .hdr-panel--nav {
   left: 50%;
   transform: translateX(-50%);
+  min-width: 100%;
+  width: max-content;
+  max-width: min(300px, calc(100vw - 24px));
 }
 
 .hdr-item {
@@ -755,6 +920,9 @@ export default Vue.extend({
   margin-left: auto;
   position: relative;
   z-index: 2;
+  /* 与左侧 meta / 语言格对称，避免「Log in」贴紧视口右缘 */
+  padding-right: 20px;
+  column-gap: 0;
 }
 
 .meta-block {
@@ -790,6 +958,138 @@ export default Vue.extend({
 .lang-btn .text-micro {
   font-size: 11px;
   font-weight: 600;
+}
+
+.sign-in-btn {
+  height: 36px;
+  padding: 0 22px;
+  margin-left: 12px;
+  margin-right: 0;
+  border-radius: 4px;
+  border: 1px solid var(--brand-blue-600, #2e4fff);
+  background: var(--brand-blue-600, #2e4fff);
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  cursor: crosshair;
+  white-space: nowrap;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.sign-in-btn:hover {
+  background: var(--brand-blue-700, #2441e0);
+  border-color: var(--brand-blue-700, #2441e0);
+  color: #fff;
+}
+
+.user-slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.user-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 80px;
+  padding: 0 12px 0 8px;
+  margin: 0;
+  border: none;
+  background: none;
+  cursor: crosshair;
+  color: var(--brand-blue-600, #2e4fff);
+}
+
+.user-trigger--open .hdr-caret--user,
+.user-trigger:hover .hdr-caret--user {
+  opacity: 1;
+}
+
+.hdr-caret--user {
+  flex-shrink: 0;
+  opacity: 0.85;
+  color: var(--brand-blue-600, #2e4fff);
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.user-trigger--open .hdr-caret--user {
+  transform: rotate(180deg);
+}
+
+.user-avatar-ring {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  padding: 1px;
+  border: 1px solid var(--brand-blue-600, #2e4fff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.user-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+  line-height: 1;
+}
+
+.hdr-panel--user {
+  left: auto;
+  right: 0;
+  transform: none;
+  /* 随文案 + 图标自然宽度，避免两三条目时右侧留白过大 */
+  min-width: 0;
+  width: max-content;
+  max-width: min(220px, calc(100vw - 24px));
+}
+
+.hdr-panel--user .hdr-item--row {
+  padding-left: 12px;
+  padding-right: 12px;
+  gap: 8px;
+}
+
+.hdr-item--row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.user-menu-icon {
+  flex-shrink: 0;
+  color: currentColor;
+}
+
+.mobile-user-block {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.mobile-cell--static {
+  cursor: default;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 12px;
+  justify-content: flex-start;
 }
 
 .mobile-toggle {
@@ -887,9 +1187,16 @@ export default Vue.extend({
   background: rgba(0, 0, 0, 0.02);
 }
 
+.mobile-sub .mobile-cell {
+  justify-content: center;
+  text-align: center;
+}
+
 .mobile-sub-cell {
-  padding-left: 44px !important;
+  padding-left: 28px !important;
+  padding-right: 28px !important;
   font-size: 13px;
+  justify-content: center !important;
 }
 
 .mobile-sub-cell.active {

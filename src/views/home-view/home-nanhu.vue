@@ -29,7 +29,7 @@
               <SplitReveal
                 v-else
                 key="orb-l1-en"
-                text="Three-body"
+                text="Three-Body"
                 :base-delay="0"
                 :stagger="60"
               />
@@ -44,7 +44,7 @@
               <SplitReveal
                 v-else
                 key="orb-l2-en"
-                text="Const. Workspace"
+                text="Constellation Workspace"
                 :base-delay="180"
                 :stagger="55"
               />

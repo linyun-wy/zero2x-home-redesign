@@ -10,7 +10,7 @@
           <ScrambleText text="03 / SCIENTIFIC_INTELLIGENCE" />
         </span>
         <h2 class="section-heading">
-          <SplitReveal :text="lang === 'zh' ? '科学基础模型' : 'SCIENCE FOUNDATION MODEL'" />
+          <SplitReveal :text="lang === 'zh' ? '科学基础模型' : 'Science Foundation Model'" />
         </h2>
       </div>
 
@@ -25,7 +25,7 @@
                 </div>
                 <div>
                   <span class="text-micro" style="color:rgba(0,0,0,0.4);display:block;margin-bottom:4px;">FOUNDATION_MODEL</span>
-                  <h3 class="model-title">{{ lang === 'zh' ? '021科学基础模型' : '021 SCIENCE FOUNDATION MODEL' }}</h3>
+                  <h3 class="model-title">{{ lang === 'zh' ? '021科学基础模型' : '021 Science Foundation Model' }}</h3>
                 </div>
               </div>
               <p class="model-desc">
@@ -47,7 +47,7 @@
           <ScrambleText text="03.2 / SPECIALIZED" />
         </span>
         <h3 class="domain-heading">
-          <SplitReveal :text="lang === 'zh' ? '领域科学模型' : 'DOMAIN SCIENCE MODELS'" :base-delay="60" />
+          <SplitReveal :text="lang === 'zh' ? '领域科学模型' : 'Domain Science Models'" :base-delay="60" />
         </h3>
       </div>
 
@@ -162,8 +162,7 @@ export default Vue.extend({
   letter-spacing: -0.03em;
   color: #0a0c10;
   margin: 0;
-  text-transform: uppercase;
-  line-height: 1;
+  line-height: 1.05;
 }
 
 /* 021 基础模型区块：与 domain-card 一致的 hover（了解更多）与底边渐变条；左侧竖条仅与正文等高 */
@@ -238,7 +237,6 @@ export default Vue.extend({
   color: #0a0c10;
   margin: 0;
   letter-spacing: -0.02em;
-  text-transform: uppercase;
 }
 
 .model-desc {
@@ -255,7 +253,6 @@ export default Vue.extend({
   letter-spacing: -0.03em;
   color: #0a0c10;
   margin: 0;
-  text-transform: uppercase;
 }
 
 .domain-section-head {

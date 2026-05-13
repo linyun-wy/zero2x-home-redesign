@@ -18,9 +18,9 @@
               <SplitReveal text="数据枢纽" :base-delay="120" :stagger="70" />
             </template>
             <template v-else>
-              <SplitReveal text="HAINA" :base-delay="0" :stagger="55" />
+              <SplitReveal text="Haina" :base-delay="0" :stagger="55" />
               <br />
-              <SplitReveal text="DATA NEXUS" :base-delay="140" :stagger="55" />
+              <SplitReveal text="Data Nexus" :base-delay="140" :stagger="55" />
             </template>
           </h2>
 
@@ -101,8 +101,7 @@ export default Vue.extend({
   letter-spacing: -0.04em;
   color: #0a0c10;
   margin: 0 0 36px;
-  line-height: 1;
-  text-transform: uppercase;
+  line-height: 1.05;
 }
 
 .haina-quote {

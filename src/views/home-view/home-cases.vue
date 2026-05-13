@@ -9,7 +9,7 @@
           <ScrambleText text="06 / ACCELERATING_RESEARCH" />
         </span>
         <h2 class="cases-heading">
-          <SplitReveal :text="lang === 'zh' ? '加速科研案例' : 'RESEARCH CASES'" />
+          <SplitReveal :text="lang === 'zh' ? '加速科研案例' : 'Research Cases'" />
         </h2>
       </div>
 
@@ -119,9 +119,7 @@ export default Vue.extend({
   font-weight: 900;
   letter-spacing: -0.04em;
   color: #0a0c10;
-  margin: 0;
-  text-transform: uppercase;
-  line-height: 1;
+  line-height: 1.05;
 }
 
 .nav-arrow {

@@ -1,5 +1,5 @@
 <template>
-  <section style="background:#f9faf9;position:relative;overflow:hidden;">
+  <section id="section-02x-lab" style="background:#f9faf9;position:relative;overflow:hidden;">
     <!-- 网格线 -->
     <div class="absolute inset-0 pointer-events-none grid-lines" style="z-index:0;"></div>
 
@@ -31,7 +31,7 @@
             </li>
             <li v-else>
               <span class="list-marker"></span>
-              <div><strong>END-TO-END LOOP</strong> — From idea to deliverable in one workbench.</div>
+              <div><strong>End-to-End Loop</strong> — From idea to deliverable in one workbench.</div>
             </li>
             <li v-if="lang === 'zh'">
               <span class="list-marker"></span>
@@ -39,7 +39,7 @@
             </li>
             <li v-else>
               <span class="list-marker"></span>
-              <div><strong>DOMAIN-NATIVE ECOSYSTEM</strong> — 200+ Skills, 200+ MCPs, 80+ GIS tools out of the box.</div>
+              <div><strong>Domain-Native Ecosystem</strong> — 200+ Skills, 200+ MCPs, 80+ GIS tools out of the box.</div>
             </li>
             <li v-if="lang === 'zh'">
               <span class="list-marker"></span>
@@ -47,7 +47,7 @@
             </li>
             <li v-else>
               <span class="list-marker"></span>
-              <div><strong>10× PRODUCTIVITY</strong> — High-fidelity reproduction; agents, code, and PPTs in one click.</div>
+              <div><strong>10× Productivity</strong> — High-fidelity reproduction; agents, code, and PPTs in one click.</div>
             </li>
           </ul>
 
@@ -59,20 +59,25 @@
           </button>
         </div>
 
-        <!-- 右侧图片占位 -->
+        <!-- 右侧：产品界面预览 -->
         <div class="lab-visual card-hover" v-reveal="{ delay: 160, dir: 'right' }" data-cursor="view">
           <div class="visual-frame">
             <div class="visual-chrome">
               <div class="chrome-dots">
                 <span></span><span></span><span></span>
               </div>
-              <span class="text-micro" style="color:rgba(0,0,0,0.3);">zero2x_lab.interface</span>
+              <span class="text-micro visual-chrome-title">02X Lab</span>
             </div>
-            <div class="visual-content">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.15)" stroke-width="1">
-                <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
-              </svg>
-              <span class="text-micro" style="color:rgba(0,0,0,0.2);display:block;margin-top:12px;">INTERFACE PREVIEW</span>
+            <div class="visual-content visual-content--shot">
+              <div class="lab-shot-stage">
+                <img
+                  class="lab-screenshot"
+                  src="/02x-lab-app-preview.png"
+                  alt="02X Lab"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -112,7 +117,7 @@ export default Vue.extend({
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 48px;
-  align-items: center;
+  align-items: start;
 }
 
 @media (max-width: 900px) {
@@ -186,20 +191,22 @@ export default Vue.extend({
   background: #2e4fff;
 }
 
-/* 视觉区 */
+/* 视觉区：与 3840×2160（16:9）截图比例一致，contain 展示全图 */
 .lab-visual {
-  height: 100%;
-  min-height: 260px;
+  width: 100%;
+  min-height: 0;
 }
 
 .visual-frame {
   width: 100%;
-  height: 100%;
-  min-height: 260px;
+  height: auto;
+  min-height: 0;
   border: 1px solid rgba(46, 79, 255, 0.15);
   display: flex;
   flex-direction: column;
   background: #fff;
+  border-radius: 4px;
+  overflow: hidden;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -215,6 +222,10 @@ export default Vue.extend({
   padding: 12px 16px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.07);
   background: rgba(0, 0, 0, 0.02);
+}
+
+.visual-chrome-title {
+  color: rgba(0, 0, 0, 0.38);
 }
 
 .chrome-dots {
@@ -240,5 +251,30 @@ export default Vue.extend({
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.02);
+}
+
+.visual-content--shot {
+  display: block;
+  padding: 0;
+  background: #fff;
+  min-height: 0;
+}
+
+/* 16:9 与截图一致；略放大可视区域，画面 cover 铺满无外圈灰底 */
+.lab-shot-stage {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: min(70vh, 880px);
+  margin: 0;
+  overflow: hidden;
+  background: #fff;
+}
+
+.lab-screenshot {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
 }
 </style>

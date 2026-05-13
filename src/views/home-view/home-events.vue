@@ -15,7 +15,7 @@
 
         <h2 class="events-heading" :class="{ 'events-heading--en': lang !== 'zh' }">
           <SplitReveal
-            :text="lang === 'zh' ? 'AI赋能创新' : 'POWER INNOVATION WITH AI'"
+            :text="lang === 'zh' ? 'AI赋能创新' : 'Power Innovation With AI'"
             :stagger="100"
           />
         </h2>
@@ -24,7 +24,7 @@
           :class="lang === 'zh' ? 'events-sub--zh' : 'events-sub--en'"
           v-reveal="{ delay: 140, dir: 'fade' }"
         >
-          {{ lang === 'zh' ? '一站式科研，加速创新进程' : 'ONE-STOP SMART RESEARCH. INNOVATION ACCELERATED.' }}
+          {{ lang === 'zh' ? '一站式科研，加速创新进程' : 'One-stop smart research. Innovation accelerated.' }}
         </p>
 
         <div class="events-cta-wrap" v-reveal="{ delay: 280, dir: 'fade' }">
@@ -33,7 +33,7 @@
             href="mailto:support-zero2x@zhejianglab.org"
             data-cursor="view"
           >
-            {{ lang === 'zh' ? '联系我们' : 'CONTACT US' }}
+            {{ lang === 'zh' ? '联系我们' : 'Contact Us' }}
             <span style="margin-left:12px;">→</span>
           </a>
         </div>
@@ -99,10 +99,9 @@ export default Vue.extend({
   text-transform: none;
 }
 
-/* 英文文案更长，降低字号让视觉体量与中文接近 */
+/* 英文标题更长，略缩小以与中文体量接近 */
 .events-heading--en {
   font-size: clamp(28px, 3.5vw, 48px);
-  text-transform: uppercase;
   letter-spacing: -0.02em;
 }
 
@@ -120,9 +119,8 @@ export default Vue.extend({
 }
 
 .events-sub--en {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-family: var(--font-sans, 'Noto Sans SC', system-ui, sans-serif);
+  letter-spacing: -0.01em;
 }
 
 .events-cta-wrap {
@@ -140,8 +138,8 @@ export default Vue.extend({
   color: #0a0c10;
   font-size: 14px;
   font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-transform: none;
   border: none;
   cursor: crosshair;
   text-decoration: none;

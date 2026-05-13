@@ -11,35 +11,51 @@ export default Vue.extend({
   mounted() {
     let mx = -300;
     let my = -300;
+    /** 显示位置（与指针分离，形成柔和惯性） */
     let dx = -300;
     let dy = -300;
     let rafId = 0;
 
     const ring = this.$refs.ring as HTMLElement;
     const HALF = 10; // 半径（直径 20px）
+    /** 每帧逼近比例：越小越「飘」，越大越贴指针 */
+    const SMOOTH = 0.17;
+    /** 收敛阈值：小于则对齐并停表，避免空转 RAF */
+    const EPS = 0.45;
+
+    const tick = () => {
+      dx += (mx - dx) * SMOOTH;
+      dy += (my - dy) * SMOOTH;
+      ring.style.transform = `translate3d(${dx - HALF}px, ${dy - HALF}px, 0)`;
+
+      if (Math.hypot(mx - dx, my - dy) > EPS) {
+        rafId = requestAnimationFrame(tick);
+      } else {
+        rafId = 0;
+        dx = mx;
+        dy = my;
+        ring.style.transform = `translate3d(${dx - HALF}px, ${dy - HALF}px, 0)`;
+      }
+    };
 
     const onMove = (e: MouseEvent) => {
       mx = e.clientX;
       my = e.clientY;
+      if (!rafId) rafId = requestAnimationFrame(tick);
     };
-    const onLeave = () => { mx = -400; my = -400; };
+    const onLeave = () => {
+      mx = -400;
+      my = -400;
+      if (!rafId) rafId = requestAnimationFrame(tick);
+    };
 
     document.addEventListener('mousemove', onMove, { passive: true });
     document.addEventListener('mouseleave', onLeave, { passive: true });
 
-    // 圆圈用比较慢的 lerp（0.08）形成明显的拖尾/跟随感
-    const tick = () => {
-      dx += (mx - dx) * 0.08;
-      dy += (my - dy) * 0.08;
-      ring.style.transform = `translate(${dx - HALF}px, ${dy - HALF}px)`;
-      rafId = requestAnimationFrame(tick);
-    };
-    rafId = requestAnimationFrame(tick);
-
     (this as any)._cleanup = () => {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseleave', onLeave);
-      cancelAnimationFrame(rafId);
+      if (rafId) cancelAnimationFrame(rafId);
     };
   },
   beforeDestroy() {
@@ -67,6 +83,7 @@ export default Vue.extend({
   mix-blend-mode: difference;
   pointer-events: none;
   z-index: 99999;
-  will-change: transform;
+  backface-visibility: hidden;
+  transform: translate3d(-300px, -300px, 0);
 }
 </style>

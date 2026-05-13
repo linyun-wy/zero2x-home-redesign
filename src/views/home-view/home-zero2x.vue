@@ -252,7 +252,7 @@ export default Vue.extend({
   font-weight: 900;
   letter-spacing: -0.04em;
   color: #ffffff;
-  font-family: var(--font-display, 'Space Grotesk', 'Noto Sans SC', sans-serif);
+  font-family: var(--font-display, 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif);
   animation: glow-breathe 4s ease-in-out infinite;
   line-height: 1;
   white-space: nowrap;

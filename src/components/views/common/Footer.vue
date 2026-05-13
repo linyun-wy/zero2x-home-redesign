@@ -8,12 +8,9 @@
 
         <!-- Logo + 品牌描述 -->
         <div class="footer-brand-col">
-          <a href="/" style="text-decoration:none;display:inline-flex;align-items:center;gap:10px;margin-bottom:16px;">
-            <div style="width:28px;height:28px;background:#0a0c10;display:flex;align-items:center;justify-content:center;">
-              <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:#f9faf9;">Z</span>
-            </div>
-            <span style="font-size:14px;font-weight:800;color:#0a0c10;letter-spacing:-0.02em;text-transform:uppercase;">zero2x</span>
-          </a>
+          <router-link to="/" class="footer-logo-link">
+            <span class="footer-logo-wordmark">zero2x</span>
+          </router-link>
           <p style="font-size:13px;line-height:1.7;color:#777f8f;margin:0;max-width:260px;">
             {{ lang === 'zh'
               ? '全球性开放科学基础设施，推动"人工智能+科学"融合发展'
@@ -54,10 +51,11 @@
 
       </div>
 
-      <!-- 版权信息 -->
-      <div style="border-top:1px solid rgba(0,0,0,0.08);padding:20px 0;margin-top:40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:rgba(0,0,0,0.4);">{{ t('footer.copyright') }}</span>
-        <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:rgba(0,0,0,0.35);text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#2e4fff'" onmouseout="this.style.color='rgba(0,0,0,0.35)'">{{ t('footer.icp') }}</a>
+      <!-- 版权信息：与截图一致，单行居中 -->
+      <div class="footer-copy-bar">
+        <span class="footer-copy-text">{{ t('footer.copyright') }}</span>
+        <span class="footer-copy-sep" aria-hidden="true">|</span>
+        <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener" class="footer-copy-link">{{ t('footer.icp') }}</a>
       </div>
 
     </div>
@@ -97,6 +95,24 @@ export default Vue.extend({
   flex-direction: column;
 }
 
+.footer-logo-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  margin-bottom: 16px;
+  width: fit-content;
+}
+
+.footer-logo-wordmark {
+  font-size: clamp(17px, 1.85vw, 21px);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  font-family: var(--font-display, 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif);
+  color: var(--brand-blue-600, #2e4fff);
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .footer-link {
   font-size: 14px;
   color: #52525a;
@@ -108,7 +124,42 @@ export default Vue.extend({
   color: #2e4fff;
 }
 
-/* 确保关闭额外的 div */
+.footer-copy-bar {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  margin-top: 40px;
+  padding: 20px 16px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  font-family: var(--font-sans, 'Noto Sans SC', system-ui, sans-serif);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #5c5c66;
+}
+
+.footer-copy-sep {
+  color: rgba(0, 0, 0, 0.25);
+  user-select: none;
+}
+
+.footer-copy-text,
+.footer-copy-link {
+  color: #5c5c66;
+  font-size: 14px;
+}
+
+.footer-copy-link {
+  text-decoration: none;
+  transition: color 0.2s;
+  font-size: 14px;
+}
+
+.footer-copy-link:hover {
+  color: #2e4fff;
+}
 
 @media (max-width: 1024px) {
   .footer-cols {
