@@ -84,8 +84,21 @@ const zhMessages = {
   },
   labPage: {
     heroTitle: '02X Lab',
+    /** Portal 首屏副标题（文档） */
+    heroTagline: '面向科学家的AI原生智能体操作平台',
+    /** 首页模块与 Portal 首屏共用长描述 */
     heroDesc:
-      '02X Lab 是一款面向科研场景的 AI 驱动一体化科研工作台，覆盖"提出问题 → 数据获取 → 分析执行 → 报告输出"的科研全流程闭环。',
+      '02x Lab 是以科学家为中心的AI原生智能体操作平台，融合算力、模型与智能体，旨在实现多智能体驱动的自主科学发现循环，构建开放的全球科学智能生态。',
+    sectionsLead: '02x Lab专为科学家而设计',
+    toolsetTitle: '智能科研工具集',
+    toolsetBody:
+      '集成 Chat、Deep Discovery、文献解读等多款AI工具，覆盖从文献调研到成果验证的全流程科研需求。',
+    vibeTitle: 'Vibe Research 自动科研引擎',
+    vibeBody:
+      '支持半自动 / 全自动科研集成开发环境，将科研意图转化为可执行 Benchmark，让 AI 在明确规则下无限迭代探索。',
+    builderTitle: 'Agent Builder',
+    builderBody:
+      '提供模型、数据、工具、技能共享与协作环境，支持低代码智能体构建与跨机构全球科研协同。',
   },
   genos: {
     modelTitle: '人类基因组基础模型',
@@ -214,8 +227,19 @@ const enMessages = {
   },
   labPage: {
     heroTitle: '02X Lab',
+    heroTagline: 'An AI-native agent operating platform built for scientists',
     heroDesc:
-      '02X Lab is an AI-Powered Workbench for Scientific Research. It delivers a closed-loop, end-to-end research experience covering Problem Definition → Data Acquisition → Analysis Execution → Report Output.',
+      '02x Lab is a scientist-centric, AI-native agent operating platform that unifies compute, models, and agents to enable multi-agent–driven autonomous scientific discovery loops and an open global ecosystem for scientific intelligence.',
+    sectionsLead: '02x Lab is designed for scientists',
+    toolsetTitle: 'Intelligent research toolkit',
+    toolsetBody:
+      'Integrates Chat, Deep Discovery, literature tools, and more—covering the full pipeline from literature survey to results validation.',
+    vibeTitle: 'Vibe Research — automated research engine',
+    vibeBody:
+      'Semi- and fully-automated research IDE: turn research intent into executable benchmarks so AI can iterate under clear rules.',
+    builderTitle: 'Agent Builder',
+    builderBody:
+      'Shared models, data, tools, and skills with collaboration—low-code agent building and cross-institution global research teamwork.',
   },
   genos: {
     modelTitle: 'Foundation Model',

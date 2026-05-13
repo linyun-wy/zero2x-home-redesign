@@ -350,3 +350,8 @@ h1, h2, h3, h4, h5, h6 {
 .animate-shake {
   animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
 }
+
+/* Dev-only: Vite error overlay host (no production DOM match) */
+vite-error-overlay {
+  overflow: hidden;
+}

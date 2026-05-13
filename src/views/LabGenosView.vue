@@ -5,149 +5,49 @@
         <HeroSdfDotMatrix />
       </div>
       <div class="genos-hero-inner">
-        <h1 class="genos-hero-title">{{ t('labPage.heroTitle') }}</h1>
+        <div class="genos-hero-brand">
+          <img
+            class="genos-hero-logo"
+            src="/o2x-lab-logo.png"
+            alt="02X Lab"
+            width="133"
+            height="24"
+            loading="eager"
+            decoding="async"
+          />
+          <p class="genos-hero-tagline">{{ t('labPage.heroTagline') }}</p>
+        </div>
         <p class="genos-hero-desc">{{ t('labPage.heroDesc') }}</p>
         <div class="genos-actions">
-          <button type="button" class="genos-btn genos-btn--cta" @click="setTab('Vision')">
+          <button type="button" class="genos-btn genos-btn--cta" @click="scrollToPortalSections">
             {{ lang === 'zh' ? '立即体验' : 'Start now' }}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="genos-cta-icon">
               <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
           </button>
-          <button type="button" class="genos-btn genos-btn--outline" @click="openMail">
-            {{ t('genos.contact') }}
-          </button>
         </div>
       </div>
     </section>
 
-    <nav class="genos-nav" aria-label="Genos sections">
-      <div class="genos-nav-inner">
-        <button
-          v-for="item in tabs"
-          :key="item"
-          type="button"
-          class="genos-nav-item"
-          :class="{ 'genos-nav-item--active': tab === item }"
-          @click="setTab(item)"
-        >
-          {{ t('genos.' + tabKey(item)) }}
-        </button>
-      </div>
-    </nav>
-
-    <!-- Features -->
-    <section v-show="tab === 'Features'" class="genos-panel">
-      <h2 class="genos-panel-title">{{ t('genos.featuresTitle') }}</h2>
-      <div class="genos-feature-grid">
-        <img
-          v-for="(src, i) in featureImages"
-          :key="i"
-          :src="src"
-          alt=""
-          class="genos-feature-img"
-          loading="lazy"
-        />
-      </div>
-    </section>
-
-    <!-- Architecture -->
-    <section v-show="tab === 'Architecture'" class="genos-panel genos-panel--split">
-      <div class="genos-split-text">
-        <h2 class="genos-panel-heading">{{ t('genos.architectureTitle') }}</h2>
-        <ul class="genos-list">
-          <li>
-            <strong>{{ t('genos.architectureOneTitle') }}</strong>
-            {{ t('genos.architectureOne') }}
-          </li>
-          <li>
-            <strong>{{ t('genos.architectureTwoTitle') }}</strong>
-            {{ t('genos.architectureTwo') }}
-          </li>
-          <li>
-            <strong>{{ t('genos.architectureThreeTitle') }}</strong>
-            {{ t('genos.architectureThree') }}
-          </li>
-        </ul>
-      </div>
-      <div class="genos-split-media">
-        <img class="genos-wire-img" src="/genos/architecture.png" alt="" loading="lazy" />
-      </div>
-    </section>
-
-    <!-- Benchmarks -->
-    <section v-show="tab === 'Benchmarks'" class="genos-panel genos-panel--split">
-      <div class="genos-split-text">
-        <h2 class="genos-panel-heading">{{ t('genos.benchmarksTitle') }}</h2>
-        <ul class="genos-list">
-          <li>
-            <strong>{{ t('genos.benchmarksOneTitle') }}</strong>
-            {{ t('genos.benchmarksOne') }}
-            <span class="genos-accent">0.9911</span>
-            {{ t('genos.benchmarksOneSum') }}
-          </li>
-          <li>
-            <strong>{{ t('genos.benchmarksTwoTitle') }}</strong>
-            {{ t('genos.benchmarksTwo') }}
-            <span class="genos-accent">0.9326</span>
-            {{ t('genos.benchmarksTwoSum') }}
-          </li>
-          <li>
-            <strong>{{ t('genos.benchmarksThreeTitle') }}</strong>
-            {{ t('genos.benchmarksThree') }}
-          </li>
-        </ul>
-      </div>
-      <div class="genos-split-media">
-        <img class="genos-wire-img" src="/genos/benchmarks.png" alt="" loading="lazy" />
-      </div>
-    </section>
-
-    <!-- Download / Vision -->
-    <section v-show="tab === 'Vision'" class="genos-panel genos-panel--download">
-      <div class="genos-download-inner">
-        <h2 class="genos-panel-heading">{{ t('genos.modelDownloadTitle') }}</h2>
-        <ul class="genos-list genos-list--spaced">
-          <li>
-            <strong>{{ t('genos.modelDownloadOneTitle') }}</strong>
-            {{ t('genos.modelDownloadOne') }}
-          </li>
-          <li>
-            <strong>{{ t('genos.modelDownloadTwoTitle') }}</strong>
-            {{ t('genos.modelDownloadTwo') }}
-          </li>
-          <li>
-            <strong>{{ t('genos.modelDownloadThreeTitle') }}</strong>
-            {{ t('genos.modelDownloadThree') }}
-          </li>
-        </ul>
-        <p class="genos-mail-line">
-          {{ t('genos.modelDownloadEmail') }}
-          <button type="button" class="genos-mail-link" @click="copyEmail">genos@zhejianglab.org</button>
-          {{ t('genos.modelDownloadEmails') }}
-        </p>
-        <p class="genos-download-note">{{ t('genos.modelDownloadDes') }}</p>
-        <div class="genos-platform-row">
-          <a class="genos-platform" href="https://github.com/zhejianglab/Genos" target="_blank" rel="noopener noreferrer">
-            <span class="genos-platform-label">GitHub</span>
-            <span class="genos-platform-arrow">→</span>
-          </a>
-          <a
-            class="genos-platform"
-            href="https://huggingface.co/collections/ZhejiangLab/genos"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <span class="genos-platform-label">Hugging Face</span>
-            <span class="genos-platform-arrow">→</span>
-          </a>
-          <a class="genos-platform" href="https://cloud.stomics.tech/" target="_blank" rel="noopener noreferrer">
-            <span class="genos-platform-label">DCS Cloud</span>
-            <span class="genos-platform-arrow">→</span>
-          </a>
+    <div id="portal-lab-sections" class="lab-portal-sections">
+      <div class="lab-portal-inner">
+        <p class="lab-portal-lead">{{ t('labPage.sectionsLead') }}</p>
+        <div class="lab-portal-grid">
+          <article class="lab-portal-card">
+            <h2 class="lab-portal-card-title">{{ t('labPage.toolsetTitle') }}</h2>
+            <p class="lab-portal-card-body">{{ t('labPage.toolsetBody') }}</p>
+          </article>
+          <article class="lab-portal-card">
+            <h2 class="lab-portal-card-title">{{ t('labPage.vibeTitle') }}</h2>
+            <p class="lab-portal-card-body">{{ t('labPage.vibeBody') }}</p>
+          </article>
+          <article class="lab-portal-card">
+            <h2 class="lab-portal-card-title">{{ t('labPage.builderTitle') }}</h2>
+            <p class="lab-portal-card-body">{{ t('labPage.builderBody') }}</p>
+          </article>
         </div>
       </div>
-    </section>
+    </div>
   </div>
 </template>
 
@@ -156,15 +56,11 @@ import Vue from 'vue';
 import { langStore, t } from '../lang/index';
 import HeroSdfDotMatrix from '../components/HeroSdfDotMatrix.vue';
 
-type GenosTab = 'Features' | 'Architecture' | 'Benchmarks' | 'Vision';
-
 export default Vue.extend({
   name: 'LabGenosView',
   components: { HeroSdfDotMatrix },
   data() {
     return {
-      tab: 'Features' as GenosTab,
-      tabs: ['Features', 'Architecture', 'Benchmarks', 'Vision'] as GenosTab[],
       heroReduceMotion: false,
       heroTargetX: 0.82,
       heroTargetY: 0.38,
@@ -197,24 +93,16 @@ export default Vue.extend({
     lang() {
       return langStore.lang;
     },
-    featureImages(): string[] {
-      const zh = ['/genos/featuresx01.png', '/genos/featuresx02.png', '/genos/featuresx03.png', '/genos/featuresx04.png'];
-      const en = ['/genos/features1.png', '/genos/features2.png', '/genos/features3.png', '/genos/features4.png'];
-      return this.lang === 'zh' ? zh : en;
-    },
   },
   methods: {
     t(key: string) {
       return t(key);
     },
-    tabKey(tab: GenosTab): string {
-      const map: Record<GenosTab, string> = {
-        Features: 'features',
-        Architecture: 'architecture',
-        Benchmarks: 'benchmarks',
-        Vision: 'modelDownload',
-      };
-      return map[tab];
+    scrollToPortalSections() {
+      const el = document.getElementById('portal-lab-sections');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     },
     onHeroMouseMove(ev: MouseEvent) {
       const el = ev.currentTarget as HTMLElement | null;
@@ -234,19 +122,6 @@ export default Vue.extend({
         this.heroCoolY = 82 + my * 0.4;
         this.heroPurpleX = 26 + mx * 0.55;
         this.heroPurpleY = 74 + my * 0.45;
-      }
-    },
-    setTab(tab: GenosTab) {
-      this.tab = tab;
-    },
-    openMail() {
-      window.location.href = 'mailto:genos@zhejianglab.org';
-    },
-    async copyEmail() {
-      try {
-        await navigator.clipboard.writeText('genos@zhejianglab.org');
-      } catch {
-        /* ignore */
       }
     },
   },
@@ -386,13 +261,27 @@ export default Vue.extend({
   }
 }
 
-.genos-hero-title {
-  margin: 0 0 16px;
+.genos-hero-brand {
+  margin: 0 0 20px;
   max-width: 760px;
-  font-size: clamp(28px, 4vw, 52px);
-  font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+}
+
+.genos-hero-logo {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(100%, 300px);
+  max-height: 72px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.genos-hero-tagline {
+  margin: 14px 0 0;
+  font-size: clamp(17px, 2.2vw, 22px);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
   color: #071942;
   text-align: left;
   font-family: var(--font-display, 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif);
@@ -401,17 +290,17 @@ export default Vue.extend({
 .genos-hero-desc {
   margin: 0 0 28px;
   max-width: 760px;
-  min-height: calc(1.55em * 5);
-  font-size: clamp(16px, 2vw, 20px);
-  font-weight: 600;
-  line-height: 1.55;
+  min-height: 0;
+  font-size: clamp(15px, 1.85vw, 19px);
+  font-weight: 500;
+  line-height: 1.65;
   color: #0a0c10;
   text-align: left;
 }
 
 @media (max-width: 640px) {
   .genos-hero-desc {
-    min-height: calc(1.55em * 7);
+    min-height: 0;
   }
 }
 
@@ -424,7 +313,7 @@ export default Vue.extend({
 }
 
 @media (max-width: 1100px) {
-  .genos-hero-title,
+  .genos-hero-brand,
   .genos-hero-desc,
   .genos-actions {
     max-width: none;
@@ -469,236 +358,71 @@ export default Vue.extend({
   transform: translateX(2px);
 }
 
-.genos-btn--outline {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: transparent;
-  color: var(--brand-blue-600, #2e4fff);
-  border: 1px solid var(--brand-blue-600, #2e4fff);
-}
-
-.genos-btn--outline:hover {
-  background: rgba(46, 79, 255, 0.08);
-  color: var(--brand-blue-600, #2e4fff);
-  border-color: var(--brand-blue-600, #2e4fff);
-}
-
-.genos-nav {
+/* 页面下方：三大功能（无 Tab） */
+.lab-portal-sections {
+  scroll-margin-top: 72px;
   background: #fff;
-  box-shadow: 6.86px 2px 10px rgba(7, 16, 48, 0.12);
+  padding: 64px 24px 100px;
+  border-top: 1px solid rgba(7, 25, 66, 0.06);
 }
 
-.genos-nav-inner {
+.lab-portal-inner {
   max-width: 1320px;
   margin: 0 auto;
-  padding: 0 40px;
   box-sizing: border-box;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  min-height: 48px;
 }
 
-@media (max-width: 1100px) {
-  .genos-nav-inner {
-    padding: 0 24px;
-  }
-}
-
-.genos-nav-item {
-  flex: 1 1 auto;
-  min-width: 120px;
-  padding: 0 12px;
-  border: none;
-  background: none;
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 600;
-  color: #2e2c34;
-  cursor: crosshair;
-  line-height: 48px;
-  position: relative;
-  transition: color 0.2s;
-}
-
-.genos-nav-item:hover {
-  color: #2b59ff;
-}
-
-.genos-nav-item--active {
-  color: #2b59ff;
-}
-
-.genos-nav-item--active::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 3px;
-  background: #2b59ff;
-}
-
-.genos-panel {
-  padding: 72px 24px 100px;
-  background: #f8fafd;
-}
-
-.genos-panel-title {
-  margin: 0 auto 40px;
-  max-width: 1100px;
-  text-align: center;
-  font-size: clamp(28px, 4vw, 42px);
+.lab-portal-lead {
+  margin: 0 0 36px;
+  font-size: clamp(20px, 2.4vw, 28px);
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: #071942;
+  text-align: center;
 }
 
-.genos-feature-grid {
-  max-width: 1200px;
-  margin: 0 auto;
+.lab-portal-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-}
-
-@media (max-width: 768px) {
-  .genos-feature-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.genos-feature-img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.genos-panel--split {
-  padding-left: max(24px, calc((100vw - 1200px) / 2 + 24px));
-  padding-right: max(24px, calc((100vw - 1200px) / 2 + 24px));
-  display: grid;
-  grid-template-columns: 1fr 1.15fr;
-  gap: 48px;
-  align-items: center;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  align-items: stretch;
 }
 
 @media (max-width: 992px) {
-  .genos-panel--split {
+  .lab-portal-grid {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
 }
 
-.genos-panel-heading {
-  margin: 0 0 24px;
-  font-size: clamp(26px, 3.2vw, 40px);
-  font-weight: 800;
-  line-height: 1.2;
-}
-
-.genos-list {
+.lab-portal-card {
   margin: 0;
-  padding: 0;
-  list-style: none;
-  color: #201f22;
+  padding: 28px 24px 32px;
+  background: #f8fafd;
+  border: 1px solid rgba(46, 79, 255, 0.12);
+  border-radius: 8px;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.lab-portal-card:hover {
+  border-color: rgba(46, 79, 255, 0.28);
+  box-shadow: 0 10px 36px rgba(7, 25, 66, 0.06);
+}
+
+.lab-portal-card-title {
+  margin: 0 0 14px;
+  font-size: clamp(17px, 1.5vw, 20px);
+  font-weight: 800;
+  line-height: 1.3;
+  color: #071942;
+}
+
+.lab-portal-card-body {
+  margin: 0;
   font-size: 15px;
-  line-height: 1.55;
-}
-
-.genos-list li {
-  position: relative;
-  padding-left: 16px;
-  margin-bottom: 16px;
-}
-
-.genos-list li::before {
-  content: '•';
-  position: absolute;
-  left: 0;
-  color: rgba(7, 25, 66, 0.45);
-  font-weight: 700;
-}
-
-.genos-list--spaced li {
-  margin-bottom: 14px;
-}
-
-.genos-accent {
-  color: #2b59ff;
-  font-weight: 700;
-}
-
-.genos-wire-img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.genos-panel--download {
-  padding-bottom: 120px;
-}
-
-.genos-download-inner {
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.genos-mail-line {
-  margin: 16px 0 12px;
-  font-size: 15px;
-  line-height: 1.6;
-}
-
-.genos-mail-link {
-  padding: 0 4px;
-  border: none;
-  background: none;
-  color: #2b59ff;
-  font: inherit;
-  font-weight: 600;
-  cursor: crosshair;
-  text-decoration: underline;
-}
-
-.genos-download-note {
-  margin: 0 0 28px;
-  font-size: 14px;
   line-height: 1.65;
   color: #3d3d44;
-}
-
-.genos-platform-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.genos-platform {
-  flex: 1 1 220px;
-  max-width: 320px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 22px 24px;
-  border-radius: 16px;
-  border: 1px solid #e0e0e0;
-  background: #fff;
-  color: #071942;
-  font-size: 18px;
-  font-weight: 700;
-  text-decoration: none;
-  transition: background 0.25s, color 0.25s, border-color 0.25s, box-shadow 0.25s;
-}
-
-.genos-platform:hover {
-  background: linear-gradient(110deg, #598fff 12%, #1d62f1 95%);
-  border-color: transparent;
-  color: #fff;
-  box-shadow: 4px 4px 10px rgba(42, 108, 246, 0.3);
-}
-
-.genos-platform-arrow {
-  font-weight: 400;
 }
 </style>
