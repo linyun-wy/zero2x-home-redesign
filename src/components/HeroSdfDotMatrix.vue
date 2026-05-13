@@ -9,6 +9,9 @@
 <script lang="ts">
 import Vue from 'vue';
 
+/** 与 drawFrame 中双团 gooey 合成一致，用于着色权重 */
+const METABALL_GOOEY_P = 0.87;
+
 /** 与首页 CharacterGrid 一致 */
 const CHARS = '0123456789ABCDEF#$@%&*+=/\\:;.<>[]{}|^~?';
 
@@ -32,9 +35,9 @@ function mixRgb(a: RGB, b: RGB, t: number): RGB {
   };
 }
 
-/** 整体略慢、副波更弱，动势更克制 */
+/** 略提速，贴近参考里 Scene Speed 的舒展节奏 */
 function waterTime(t: number): number {
-  return t * 1.2 + Math.sin(t * 0.26) * 0.045 + Math.sin(t * 0.11) * 0.055;
+  return t * 1.48 + Math.sin(t * 0.3) * 0.045 + Math.sin(t * 0.13) * 0.055;
 }
 
 function waterWarp(p: Vec2, ti: number): Vec2 {
@@ -52,6 +55,11 @@ function ball(p: Vec2, c: Vec2, r: number): number {
   return (r * r) / Math.max(d2, 1e-5);
 }
 
+/** Metaball soft-union：p∈(0,1) 时在重叠区抬高场值，颈部更宽、更易读出「水滴拉长再断」 */
+function metaballGooey(a: number, b: number, p: number): number {
+  return Math.pow(Math.pow(Math.max(a, 0), p) + Math.pow(Math.max(b, 0), p), 1 / p);
+}
+
 /**
  * 水滩形态：id=0 为「多圆簇」——若干强度接近的偏心球在等值线上读出多枚圆钮；
  * id=1 为异形双核 + 不对称鼓包。卫星距 base 须够远才会在 f=0.68 上外凸。
@@ -63,16 +71,16 @@ function puddleCluster(pw: Vec2, base: Vec2, ang: number, sep: number, r1: numbe
 
   if (id === 0) {
     /* 左团：三枚主钮错开 + 外圈 3 枚小圆 */
-    f += ball(pw, { x: base.x + ox * 0.92, y: base.y + oy * 0.88 }, r1 * 0.56);
-    f += ball(pw, { x: base.x - ox * 0.55, y: base.y - oy * 0.52 }, r2 * 0.54);
+    f += ball(pw, { x: base.x + ox * 0.92, y: base.y + oy * 0.88 }, r1 * 0.64);
+    f += ball(pw, { x: base.x - ox * 0.55, y: base.y - oy * 0.52 }, r2 * 0.61);
     const aHub = ang + 0.92 + 0.035 * Math.sin(tw * 0.075);
-    const dHub = 0.3 + sep * 0.5;
-    f += ball(pw, { x: base.x + Math.cos(aHub) * dHub, y: base.y + Math.sin(aHub) * dHub }, r1 * 0.5);
+    const dHub = 0.32 + sep * 0.55;
+    f += ball(pw, { x: base.x + Math.cos(aHub) * dHub, y: base.y + Math.sin(aHub) * dHub }, r1 * 0.57);
 
     const beads = [
-      { da: 0.38, dist: 0.35, k: 0.5, ph: 0.0 },
-      { da: 1.58, dist: 0.32, k: 0.47, ph: 0.55 },
-      { da: -0.9, dist: 0.38, k: 0.45, ph: 1.05 },
+      { da: 0.38, dist: 0.37, k: 0.56, ph: 0.0 },
+      { da: 1.58, dist: 0.34, k: 0.52, ph: 0.55 },
+      { da: -0.9, dist: 0.4, k: 0.5, ph: 1.05 },
     ];
     for (let i = 0; i < beads.length; i++) {
       const b = beads[i]!;
@@ -115,22 +123,29 @@ function puddleCluster(pw: Vec2, base: Vec2, ang: number, sep: number, r1: numbe
 
 function fieldAutoSplit(pc: Vec2, t: number): { f1: number; f2: number } {
   const tw = waterTime(t);
-  const pw = waterWarp(pc, t);
   /*
-   * breath 管「远近」、tide 管「高低错层」，相位不同，右团不再沿单轨「撞上」左团。
-   * c2 自带慢漂移，与 c1 解耦；聚散只是叠加在各自漂浮之上。
+   * 单主轴聚散 + smoothstep^2：靠近与分开都更圆融，像两滴液面张力融合/拉断。
+   * 少量 tide 错开纵移，避免完全刚性；融合时减弱 warp，轮廓更稳、桥更清楚。
    */
   const flowMaturity = smoothstep(2.2, 10.5, t);
-  const breath = 0.5 + 0.5 * Math.sin(tw * 0.11 + 0.42 * Math.sin(tw * 0.052));
-  const tide = 0.5 + 0.5 * Math.cos(tw * 0.086 + 1.55 + 0.22 * Math.sin(tw * 0.041));
-  let sepGap = Math.pow(clamp(breath, 0, 1), 0.44);
-  let sepY = Math.pow(clamp(tide, 0, 1), 0.44);
-  const sepLock = mix(0.985, 0, flowMaturity);
-  sepGap = Math.max(sepGap, sepLock);
-  sepY = Math.max(sepY, sepLock);
-  const spreadGap = smoothstep(0.1, 0.92, sepGap);
-  const spreadY = smoothstep(0.12, 0.9, sepY);
-  const gapX = mix(0.18, 1.15, spreadGap);
+  const theta = tw * 0.118 + 0.36 * Math.sin(tw * 0.055);
+  let u = 0.5 + 0.5 * Math.sin(theta);
+  const sepLock = mix(0.988, 0, flowMaturity);
+  u = Math.max(u, sepLock);
+  let spreadGap = smoothstep(0.06, 0.95, u);
+  spreadGap = spreadGap * spreadGap * (3 - 2 * spreadGap);
+
+  const tide = 0.5 + 0.5 * Math.cos(theta * 1.05 + 0.92);
+  let spreadY = mix(spreadGap, smoothstep(0.08, 0.92, tide), 0.11);
+
+  const warpRelax = mix(0.48, 1, spreadGap);
+  const pw0 = waterWarp(pc, t);
+  const pw = {
+    x: pc.x + (pw0.x - pc.x) * warpRelax,
+    y: pc.y + (pw0.y - pc.y) * warpRelax,
+  };
+
+  const gapX = mix(0.11, 1.15, spreadGap);
 
   const wanderAx = Math.sin(tw * 0.17 + 0.4) * 0.042 + Math.cos(tw * 0.1) * 0.026;
   const wanderAy = Math.cos(tw * 0.14 + 0.2) * 0.038 + Math.sin(tw * 0.088) * 0.024;
@@ -138,17 +153,17 @@ function fieldAutoSplit(pc: Vec2, t: number): { f1: number; f2: number } {
   const drift2y = Math.cos(tw * 0.1 + 0.55) * 0.04 + Math.sin(tw * 0.072 + 1.2) * 0.026;
 
   const c1 = { x: 0.7 + wanderAx, y: 0.08 + wanderAy };
-  const yMerge = 0.015;
-  const yApart = -0.34;
+  const yMerge = 0.012;
+  const yApart = -0.32;
   let c2 = {
     x: c1.x + gapX + drift2x,
-    y: c1.y + mix(yMerge, yApart, spreadY) + drift2y + Math.sin(tw * 0.11) * 0.022 * spreadY,
+    y: c1.y + mix(yMerge, yApart, spreadY) + drift2y + Math.sin(tw * 0.11) * 0.02 * spreadY,
   };
   const ang1 = tw * 0.11 + 0.7 + Math.sin(tw * 0.14) * 0.18;
   const ang2 = tw * 0.098 + 2.0 + Math.cos(tw * 0.13) * 0.17;
-  const sep1 = 0.093 + Math.sin(tw * 0.12) * 0.01;
+  const sep1 = 0.098 + Math.sin(tw * 0.12) * 0.01;
   const sep2 = 0.086 + Math.cos(tw * 0.11) * 0.009;
-  const f1 = puddleCluster(pw, c1, ang1, sep1, 0.34, 0.25, tw, 0);
+  const f1 = puddleCluster(pw, c1, ang1, sep1, 0.4, 0.29, tw, 0);
   const f2 = puddleCluster(pw, c2, ang2, sep2, 0.31, 0.23, tw, 1);
   return { f1, f2 };
 }
@@ -325,7 +340,7 @@ export default Vue.extend({
     },
 
     loop() {
-      const t = (performance.now() - this.start) * 0.00155;
+      const t = (performance.now() - this.start) * 0.00205;
       this.mouseSmoothX += (this.mouseX - this.mouseSmoothX) * 0.085;
       this.mouseSmoothY += (this.mouseY - this.mouseSmoothY) * 0.085;
       this.drawFrame(t);
@@ -365,7 +380,7 @@ export default Vue.extend({
           pc = applyNdcAspect(pc, w, h);
 
           const { f1: f1a, f2: f2a } = fieldAutoSplit(pc, t);
-          const fa = f1a + f2a;
+          const fa = metaballGooey(f1a, f2a, METABALL_GOOEY_P);
           const fm = fieldMouse(pc, t, mouseNdc) * this.mouseLive;
           const f = fa + fm;
 
@@ -384,8 +399,8 @@ export default Vue.extend({
           const col2 = colorDroplet(f2a, bgPage);
           const ww = smoothstep(0.08, 0.92, f2a / Math.max(fa, 1e-5));
           let colAuto = mixRgb(col1, col2, ww);
-          const tie = smoothstep(0.55, 0.92, 1.0 - Math.abs(f1a - f2a) / Math.max(fa, 1e-5));
-          colAuto = mixRgb(colAuto, { r: colAuto.r * 0.96, g: colAuto.g * 0.97, b: colAuto.b * 0.99 }, tie * 0.12);
+          const tie = smoothstep(0.48, 0.9, 1.0 - Math.abs(f1a - f2a) / Math.max(fa, 1e-5));
+          colAuto = mixRgb(colAuto, { r: colAuto.r * 0.96, g: colAuto.g * 0.97, b: colAuto.b * 0.99 }, tie * 0.16);
 
           let colM = colMouseOnly(fm, bgPage);
           const share = smoothstep(0.06, 0.78, fm / Math.max(f, 1e-5));
