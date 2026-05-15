@@ -9,7 +9,7 @@ const zhMessages = {
     cases: '案例',
     casesScience: '科学案例',
     casesITU: 'ITU合作',
-    news: '新闻',
+    constellation: '三体计算星座',
     events: '活动',
   },
   footer: {
@@ -17,9 +17,10 @@ const zhMessages = {
     policy: '政策指南',
     links: '友情链接',
     home: '首页',
-    resource: '资源',
+    lab: '02X Lab',
+    data: '数据',
     cases: '案例',
-    news: '新闻',
+    constellation: '三体计算星座',
     events: '活动',
     privacy: '隐私政策',
     terms: '平台服务条款',
@@ -88,8 +89,8 @@ const zhMessages = {
     heroTagline: '面向科学家的AI原生智能体操作平台',
     /** 首页模块与 Portal 首屏共用长描述 */
     heroDesc:
-      '02x Lab 是以科学家为中心的AI原生智能体操作平台，融合算力、模型与智能体，旨在实现多智能体驱动的自主科学发现循环，构建开放的全球科学智能生态。',
-    sectionsLead: '02x Lab专为科学家而设计',
+      '02X Lab 是以科学家为中心的AI原生智能体操作平台，融合算力、模型与智能体，旨在实现多智能体驱动的自主科学发现循环，构建开放的全球科学智能生态。',
+    sectionsLead: '02X Lab专为科学家而设计',
     toolsetTitle: '智能科研工具集',
     toolsetBody:
       '集成 Chat、Deep Discovery、文献解读等多款AI工具，覆盖从文献调研到成果验证的全流程科研需求。',
@@ -151,7 +152,7 @@ const enMessages = {
     cases: 'Cases',
     casesScience: 'Science cases',
     casesITU: 'ITU collaboration',
-    news: 'News',
+    constellation: 'Three-body Constellation',
     events: 'Events',
   },
   footer: {
@@ -159,9 +160,10 @@ const enMessages = {
     policy: 'Policy Guidelines',
     links: 'Links',
     home: 'Home',
-    resource: 'Resource',
+    lab: '02X Lab',
+    data: 'Data',
     cases: 'Cases',
-    news: 'News',
+    constellation: 'Three-body Constellation',
     events: 'Events',
     privacy: 'Privacy Policy',
     terms: 'Terms of Service',
@@ -229,8 +231,8 @@ const enMessages = {
     heroTitle: '02X Lab',
     heroTagline: 'An AI-native agent operating platform built for scientists',
     heroDesc:
-      '02x Lab is a scientist-centric, AI-native agent operating platform that unifies compute, models, and agents to enable multi-agent–driven autonomous scientific discovery loops and an open global ecosystem for scientific intelligence.',
-    sectionsLead: '02x Lab is designed for scientists',
+      '02X Lab is a scientist-centric, AI-native agent operating platform that unifies compute, models, and agents to enable multi-agent–driven autonomous scientific discovery loops and an open global ecosystem for scientific intelligence.',
+    sectionsLead: '02X Lab is designed for scientists',
     toolsetTitle: 'Intelligent research toolkit',
     toolsetBody:
       'Integrates Chat, Deep Discovery, literature tools, and more—covering the full pipeline from literature survey to results validation.',

@@ -7,7 +7,7 @@
     <home-021></home-021>
     <home-models></home-models>
     <home-haina></home-haina>
-    <home-nanhu></home-nanhu>
+    <home-constellation />
     <home-cases></home-cases>
     <home-events></home-events>
   </div>
@@ -18,7 +18,7 @@ import HomeZero2x from './home-zero2x.vue';
 import Home021 from './home-021.vue';
 import HomeModels from './home-models.vue';
 import HomeHaina from './home-haina.vue';
-import HomeNanhu from './home-nanhu.vue';
+import HomeConstellation from './home-constellation.vue';
 import HomeCases from './home-cases.vue';
 import HomeEvents from './home-events.vue';
 import CustomCursor from '../../components/CustomCursor.vue';

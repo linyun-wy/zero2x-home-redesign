@@ -62,6 +62,10 @@ export default Vue.extend({
     /** 是否绘制最外层清晰轮廓圆（与投影球径一致） */
     showRim: { type: Boolean, default: true },
     rimColor: { type: String, default: 'rgba(200, 232, 255, 0.72)' },
+    /** 为 true 时停止 RAF（用于区块离屏暂停） */
+    paused: { type: Boolean, default: false },
+    /** 为 false 时只绘制一帧，无自转 RAF（省 CPU） */
+    animated: { type: Boolean, default: true },
   },
   data() {
     return {
@@ -79,6 +83,21 @@ export default Vue.extend({
   watch: {
     size() {
       this.setupCanvas();
+      this.afterResizeRedraw();
+    },
+    paused(val: boolean) {
+      if (this.animated) {
+        if (val) {
+          if (this.raf) {
+            cancelAnimationFrame(this.raf);
+            this.raf = 0;
+          }
+        } else {
+          this.loop();
+        }
+      } else if (!val) {
+        this.$nextTick(() => this.paint());
+      }
     },
   },
   mounted() {
@@ -86,7 +105,14 @@ export default Vue.extend({
     this.ctx = c.getContext('2d', { alpha: true });
     this.dpr = Math.min(window.devicePixelRatio || 1, 2);
     this.setupCanvas();
-    this.loop();
+    if (!this.animated) {
+      this.angle = Math.random() * Math.PI * 2;
+    }
+    if (this.animated) {
+      this.loop();
+    } else {
+      this.paint();
+    }
   },
   beforeDestroy() {
     if (this.raf) cancelAnimationFrame(this.raf);
@@ -109,6 +135,36 @@ export default Vue.extend({
       const sc = d / (d + z);
       return { x: cx + x * sc * scale, y: cy + y * sc * scale, z, sc };
     },
+    /**
+     * 透视投影下球面轮廓的屏幕半径：在球面上密采样取投影点到球心的最大距离，
+     * 替代固定 scale 画圆，避免白圈与线框球大小/透视不一致。
+     */
+    computeProjectedSphereRadius(
+      spin: number,
+      tiltX: number,
+      tiltZ: number,
+      cx: number,
+      cy: number,
+      scale: number,
+      d: number,
+    ): number {
+      const golden = (1 + Math.sqrt(5)) / 2;
+      let rMax = 0;
+      const n = 160;
+      for (let i = 0; i < n; i++) {
+        const t = (i + 0.5) / n;
+        const inc = Math.acos(1 - 2 * t);
+        const az = 2 * Math.PI * golden * i;
+        const x = Math.sin(inc) * Math.cos(az);
+        const y = Math.cos(inc);
+        const z = Math.sin(inc) * Math.sin(az);
+        const q = this.transformPoint(x, y, z, spin, tiltX, tiltZ);
+        const P = this.project(q.x, q.y, q.z, cx, cy, scale, d);
+        const dist = Math.hypot(P.x - cx, P.y - cy);
+        if (dist > rMax) rMax = dist;
+      }
+      return rMax > 0.2 * scale && Number.isFinite(rMax) ? rMax : scale;
+    },
     transformPoint(
       x: number,
       y: number,
@@ -127,23 +183,58 @@ export default Vue.extend({
       const sz = Math.sin(tiltZ);
       return rotY(p.x, p.y, p.z, cz, sz);
     },
+    afterResizeRedraw() {
+      if (this.animated) {
+        if (!this.paused) {
+          if (this.raf) {
+            cancelAnimationFrame(this.raf);
+            this.raf = 0;
+          }
+          this.loop();
+        }
+      } else {
+        this.paint();
+      }
+    },
     loop() {
+      if (!this.animated) {
+        this.raf = 0;
+        return;
+      }
+      if (this.paused) {
+        this.raf = 0;
+        return;
+      }
       const ctx = this.ctx;
       const c = this.$refs.canvas as HTMLCanvasElement;
       if (!ctx || !c) {
-        this.raf = requestAnimationFrame(() => this.loop());
+        if (!this.paused) {
+          this.raf = requestAnimationFrame(() => this.loop());
+        } else {
+          this.raf = 0;
+        }
         return;
       }
+      this.angle += 0.006 * this.speed;
+      this.paint();
+      this.raf = requestAnimationFrame(() => this.loop());
+    },
+    /** 单帧绘制（animated=false 或 loop 内调用） */
+    paint() {
+      const ctx = this.ctx;
+      const c = this.$refs.canvas as HTMLCanvasElement;
+      if (!ctx || !c) return;
       const w = c.width;
       const h = c.height;
       const cx = w / 2;
       const cy = h / 2;
       const fill = this.effectiveFillRatio();
-      const scale = (Math.min(w, h) / 2) * fill;
+      /** 为外圈描边 + shadowBlur 预留边距，避免贴 canvas 边缘被裁切 */
+      const insetPad = 18 * this.dpr;
+      const half = Math.min(w, h) / 2;
+      const scale = Math.max(6 * this.dpr, (half - insetPad) * fill);
       const d = 2.5;
       const R = 1;
-
-      this.angle += 0.006 * this.speed;
 
       /** 自西向东绕 Y 轴（地球自转感）；略俯仰视与 roll 让两极可读 */
       const spin = this.angle;
@@ -237,13 +328,14 @@ export default Vue.extend({
       ctx.arc(hx0, hy0, scale * 0.095, 0, Math.PI * 2);
       ctx.fill();
 
-      /** 最外层轮廓：与投影等效半径一致，叠在高光之上，避免「裁进方形容器」感 */
+      /** 最外层轮廓：半径与当前帧透视下的球面投影包络一致（避免白圈与线框脱节） */
       if (this.showRim) {
+        const rimR = this.computeProjectedSphereRadius(spin, tiltX, tiltZ, cx, cy, scale, d);
         const pd = this.dpr;
         const rw = Math.max(1.1 * pd, lw * 1.65);
         ctx.save();
         ctx.beginPath();
-        ctx.arc(cx, cy, scale, 0, Math.PI * 2);
+        ctx.arc(cx, cy, rimR, 0, Math.PI * 2);
         ctx.strokeStyle = this.rimColor;
         ctx.lineWidth = rw;
         ctx.shadowColor = 'rgba(140, 200, 255, 0.35)';
@@ -255,8 +347,6 @@ export default Vue.extend({
         ctx.stroke();
         ctx.restore();
       }
-
-      this.raf = requestAnimationFrame(() => this.loop());
     },
   },
 });

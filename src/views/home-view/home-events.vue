@@ -1,7 +1,15 @@
 <template>
-  <section id="section-events" class="contact-section relative overflow-hidden text-white" style="min-height:560px;display:flex;flex-direction:column;">
+  <section
+    id="section-events"
+    class="contact-section relative overflow-hidden text-white"
+    style="min-height:560px;display:flex;flex-direction:column;"
+    :class="{ 'section-out-of-view': !sectionAnimActive }"
+  >
     <!-- ASCII 颗粒背景（参考 aino.agency 加载字母质感） -->
-    <AsciiGrainBackdrop class="absolute inset-0" />
+    <AsciiGrainBackdrop
+      class="absolute inset-0"
+      :suspend-animations="!sectionAnimActive"
+    />
 
     <div class="absolute inset-0 pointer-events-none grid-lines-dark" style="z-index:1;"></div>
     <!-- 与首屏一致的深蓝氛围罩层，压住对比度便于阅读 -->
@@ -48,9 +56,11 @@ import { langStore } from '../../lang/index';
 import ScrambleText from '../../components/ScrambleText.vue';
 import AsciiGrainBackdrop from '../../components/AsciiGrainBackdrop.vue';
 import SplitReveal from '../../components/SplitReveal.vue';
+import sectionViewportActive from '../../mixins/sectionViewportActive';
 
 export default Vue.extend({
   name: 'HomeEvents',
+  mixins: [sectionViewportActive],
   components: { ScrambleText, AsciiGrainBackdrop, SplitReveal },
   computed: {
     lang() { return langStore.lang; },

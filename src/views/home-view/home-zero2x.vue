@@ -1,5 +1,8 @@
 <template>
-  <section class="hero-section relative overflow-hidden text-white">
+  <section
+    class="hero-section relative overflow-hidden text-white"
+    :class="{ 'section-out-of-view': !sectionAnimActive }"
+  >
     <!-- 背景字符矩阵 -->
     <div class="absolute inset-0 z-0 pointer-events-none">
       <CharacterGrid />
@@ -8,25 +11,35 @@
     <!-- 渐变遮罩 + 网格线 -->
     <div class="absolute inset-0 pointer-events-none grid-lines-dark" style="z-index:1;"></div>
 
-    <!-- 彩色渐变光晕层：多色 blob 在字符矩阵上漂移并循环色相，形成 GradientDots 参考效果 -->
-    <div class="hero-color-drift absolute inset-0 pointer-events-none" style="z-index:2;" aria-hidden="true">
-      <div class="hcd-blob hcd-blob-1"></div>
-      <div class="hcd-blob hcd-blob-2"></div>
-      <div class="hcd-blob hcd-blob-3"></div>
-      <div class="hcd-blob hcd-blob-4"></div>
-    </div>
+    <MatrixSpectralLayer
+      class="absolute inset-0 pointer-events-none"
+      style="z-index:2;"
+      :paused="!sectionAnimActive"
+    />
 
     <div class="absolute inset-0 pointer-events-none hero-gradient-veil" style="z-index:3;"></div>
 
     <!-- 内容区域（水平居中） -->
     <div class="relative w-full max-w-7xl mx-auto px-8 flex flex-col items-center justify-center hero-inner" style="z-index:10;">
 
-      <!-- zero2x 主logo文字 + 仅作用于 logo 范围的扫描高光 -->
-      <div class="zero2x-wrapper" style="margin-bottom:0;">
-        <div class="zero2x-fill"></div>
-        <span class="zero2x-text">zero2x</span>
-        <!-- 细扫描线在字形之上（非整块背景渐变） -->
-        <div class="zero2x-scan-line" aria-hidden="true" />
+      <!-- logo 与灯光同宽：光条在字上方留空，梯形光向下渐隐（品牌蓝） -->
+      <div class="hero-intro">
+        <div class="hero-logo-stack">
+          <div class="hero-lamp" aria-hidden="true">
+            <div class="hero-lamp__shade-wrap" aria-hidden="true">
+              <div class="hero-lamp__shade"></div>
+            </div>
+            <div class="hero-lamp__beam-shell">
+              <div class="hero-lamp__beam"></div>
+            </div>
+            <div class="hero-lamp__bar-soft"></div>
+            <div class="hero-lamp__bar"></div>
+          </div>
+          <div class="zero2x-wrapper hero-logo-reveal">
+            <span class="zero2x-text">zero2x</span>
+            <div class="zero2x-scan-line" aria-hidden="true"></div>
+          </div>
+        </div>
       </div>
 
       <!-- 中英文 tagline（暂时隐藏）
@@ -61,11 +74,14 @@
 <script lang="ts">
 import Vue from 'vue';
 import CharacterGrid from '../../components/CharacterGrid.vue';
+import MatrixSpectralLayer from '../../components/MatrixSpectralLayer.vue';
 import { langStore, t } from '../../lang/index';
+import sectionViewportActive from '../../mixins/sectionViewportActive';
 
 export default Vue.extend({
   name: 'HomeZero2x',
-  components: { CharacterGrid },
+  mixins: [sectionViewportActive],
+  components: { CharacterGrid, MatrixSpectralLayer },
   computed: {
     lang() { return langStore.lang; },
   },
@@ -78,12 +94,20 @@ export default Vue.extend({
 <style scoped>
 .hero-section {
   background: #0a0c10;
-  /* 「zero2x 理念」区块高度约 400px */
-  min-height: 400px;
+  /* 与改版前接近；灯光为叠加层不再额外占栏高 */
+  min-height: 430px;
   max-height: min(520px, 72vh);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* 区块离屏：暂停无限 CSS 动画（CharacterGrid 自有 IO 停 RAF，彩光在组件内一并暂停） */
+.hero-section.section-out-of-view .hero-lamp__beam-shell,
+.hero-section.section-out-of-view .hero-lamp__bar-soft,
+.hero-section.section-out-of-view .hero-lamp__bar,
+.hero-section.section-out-of-view .zero2x-scan-line {
+  animation-play-state: paused !important;
 }
 
 .hero-inner {
@@ -91,6 +115,233 @@ export default Vue.extend({
   padding-bottom: 32px;
   flex: 1;
   justify-content: center;
+}
+
+.hero-intro {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* 与 zero2x 同宽：灯光锚在字列正上方 */
+.hero-logo-stack {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.hero-lamp {
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* 光条下缘距文字顶 60px（条高 4px） */
+  top: calc(-60px - 4px);
+  bottom: auto;
+  /* 弥散区约为原先两倍高，便于光束向下延展 */
+  height: clamp(11rem, 28vw, 15rem);
+  pointer-events: none;
+  z-index: 0;
+  overflow: visible;
+}
+
+/* 裁切宽度 = 灯带宽；内层可模糊，外缘被裁成柔和边界（不会像硬方块） */
+.hero-lamp__shade-wrap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: clamp(-2.85rem, -7vw, -1.65rem);
+  height: clamp(2rem, 6vw, 2.85rem);
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.55) 6%, #000 14%, #000 86%, rgba(0, 0, 0, 0.55) 94%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.55) 6%, #000 14%, #000 86%, rgba(0, 0, 0, 0.55) 94%, transparent 100%);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+.hero-lamp__shade {
+  position: absolute;
+  left: -5%;
+  right: -5%;
+  top: -18px;
+  height: calc(100% + 36px);
+  width: auto;
+  background:
+    radial-gradient(ellipse 125% 95% at 50% 102%, rgba(2, 4, 10, 0.46) 0%, rgba(3, 6, 12, 0.12) 48%, transparent 72%),
+    linear-gradient(
+      180deg,
+      rgba(6, 9, 16, 0) 0%,
+      rgba(6, 9, 16, 0.05) 35%,
+      rgba(4, 7, 13, 0.16) 62%,
+      rgba(3, 5, 11, 0.32) 84%,
+      rgba(2, 3, 9, 0.38) 100%
+    );
+  filter: blur(8px);
+  opacity: 0.95;
+}
+
+/*
+ * 外层：clip + 横向 mask（无 blur，避免 WebKit 上 mask+blur 同元素导致整块不显示）
+ * 外壳加宽约 2× logo 宽，clip-path 顶点落在壳内，避免 mask 按窄盒裁掉「外张的底角」
+ * 顶边 25%～75% = 中间一半壳宽 = logo 宽；底边 0～100% = 约为顶边两倍
+ */
+.hero-lamp__beam-shell {
+  position: absolute;
+  left: -50%;
+  right: -50%;
+  top: 4px;
+  transform-origin: 50% 0%;
+  z-index: 0;
+  height: calc(100% + clamp(1.35rem, 4.6vw, 2.6rem));
+  clip-path: polygon(25% 0%, 75% 0%, 100% 100%, 0% 100%);
+  /* 两侧更长的渐变带 + 缓坡，腰线光雾更足 */
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.18) 7%,
+    rgba(0, 0, 0, 0.48) 15%,
+    rgba(0, 0, 0, 0.82) 24%,
+    #000 32%,
+    #000 68%,
+    rgba(0, 0, 0, 0.82) 76%,
+    rgba(0, 0, 0, 0.48) 85%,
+    rgba(0, 0, 0, 0.18) 93%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.18) 7%,
+    rgba(0, 0, 0, 0.48) 15%,
+    rgba(0, 0, 0, 0.82) 24%,
+    #000 32%,
+    #000 68%,
+    rgba(0, 0, 0, 0.82) 76%,
+    rgba(0, 0, 0, 0.48) 85%,
+    rgba(0, 0, 0, 0.18) 93%,
+    transparent 100%
+  );
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  pointer-events: none;
+  animation: hero-lamp-beam-in 1.72s cubic-bezier(0.33, 1, 0.32, 1) 0.22s both;
+}
+
+.hero-lamp__beam {
+  position: absolute;
+  left: -14%;
+  right: -14%;
+  top: 0;
+  height: 100%;
+  transform-origin: 50% 0%;
+  background: linear-gradient(
+    180deg,
+    rgb(46, 79, 255) 0%,
+    rgba(46, 79, 255, 0.78) 6%,
+    rgba(46, 79, 255, 0.42) 28%,
+    rgba(46, 79, 255, 0.14) 56%,
+    rgba(46, 79, 255, 0) 100%
+  );
+  filter: blur(22px);
+  mix-blend-mode: screen;
+}
+
+/* 光晕略收：少往上溢蓝，仍保条两侧晕光 */
+.hero-lamp__bar-soft {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 18px;
+  transform: translateY(-22%);
+  transform-origin: 50% 50%;
+  z-index: 0;
+  background: var(--brand-blue-600);
+  filter: blur(5px);
+  mix-blend-mode: screen;
+  opacity: 0.78;
+  border-radius: 0;
+  animation: hero-lamp-bar-soft-in 1.72s cubic-bezier(0.33, 1, 0.32, 1) 0.22s both;
+}
+
+/* 纯色荧光条；阴影主要向下，减弱灯带正上方的蓝色光晕 */
+.hero-lamp__bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 4px;
+  width: 100%;
+  margin: 0 auto;
+  z-index: 2;
+  transform-origin: center;
+  border-radius: 0;
+  background: var(--brand-blue-500);
+  box-shadow:
+    0 2px 10px rgba(46, 79, 255, 0.42),
+    0 4px 18px rgba(46, 79, 255, 0.3),
+    0 8px 28px rgba(46, 79, 255, 0.18);
+  mix-blend-mode: screen;
+  animation: hero-lamp-bar-in 1.72s cubic-bezier(0.33, 1, 0.32, 1) 0.22s both;
+}
+
+@keyframes hero-lamp-beam-in {
+  from {
+    opacity: 0;
+    /* 顶边与条同宽，自中心线横向拉开；纵向同步延伸 */
+    transform: scale(0.004, 0.38);
+  }
+  18% {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 1;
+    transform: scale(1, 1);
+  }
+}
+
+@keyframes hero-lamp-bar-soft-in {
+  from {
+    opacity: 0.22;
+    transform: translateY(-40%) scaleX(0.004);
+  }
+  18% {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 0.95;
+    transform: translateY(-40%) scaleX(1);
+  }
+}
+
+@keyframes hero-lamp-bar-in {
+  from {
+    opacity: 0.4;
+    transform: scaleX(0.004);
+  }
+  18% {
+    opacity: 0.72;
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+.hero-logo-reveal {
+  animation: hero-logo-reveal 0.8s cubic-bezier(0.42, 0, 0.58, 1) 1.05s both;
+}
+
+@keyframes hero-logo-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .hero-gradient-veil {
@@ -102,105 +353,18 @@ export default Vue.extend({
   );
 }
 
-/* ── 彩色渐变光晕层 ──────────────────────────────────── */
-/* mix-blend-mode: screen 使光晕仅对字符矩阵着色，暗背景保持黑色 */
-.hero-color-drift {
-  mix-blend-mode: screen;
-  animation: hero-hue-cycle 8s linear infinite;
-}
-
-.hcd-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(52px);
-}
-
-.hcd-blob-1 {
-  width: 62%;
-  height: 85%;
-  background: radial-gradient(ellipse at center, rgba(255, 28, 110, 0.88) 0%, transparent 68%);
-  animation: hero-blob-1 28s ease-in-out infinite;
-}
-
-.hcd-blob-2 {
-  width: 56%;
-  height: 80%;
-  background: radial-gradient(ellipse at center, rgba(90, 20, 255, 0.84) 0%, transparent 68%);
-  animation: hero-blob-2 34s ease-in-out infinite;
-}
-
-.hcd-blob-3 {
-  width: 58%;
-  height: 70%;
-  background: radial-gradient(ellipse at center, rgba(0, 210, 255, 0.78) 0%, transparent 68%);
-  animation: hero-blob-3 24s ease-in-out infinite;
-}
-
-.hcd-blob-4 {
-  width: 52%;
-  height: 75%;
-  background: radial-gradient(ellipse at center, rgba(120, 255, 80, 0.65) 0%, transparent 62%);
-  animation: hero-blob-4 38s ease-in-out infinite;
-}
-
-@keyframes hero-blob-1 {
-  0%, 100% { top: 5%;  left: 8%; }
-  25%       { top: 55%; left: 55%; }
-  50%       { top: 20%; left: 72%; }
-  75%       { top: 65%; left: 18%; }
-}
-
-@keyframes hero-blob-2 {
-  0%, 100% { top: 45%; left: 58%; }
-  33%       { top: 5%;  left: 75%; }
-  66%       { top: 72%; left: 5%; }
-}
-
-@keyframes hero-blob-3 {
-  0%, 100% { top: 68%; left: 38%; }
-  33%       { top: 15%; left: 5%; }
-  66%       { top: 42%; left: 78%; }
-}
-
-@keyframes hero-blob-4 {
-  0%, 100% { top: 18%; left: 68%; }
-  25%       { top: 78%; left: 28%; }
-  50%       { top: 38%; left: 8%; }
-  75%       { top: 8%;  left: 48%; }
-}
-
-@keyframes hero-hue-cycle {
-  from { filter: hue-rotate(0deg); }
-  to   { filter: hue-rotate(360deg); }
-}
-
-/* zero2x 反色 wrapper — 宽度紧贴文字，不撑满 */
+/* zero2x：宽度紧贴文字；叠在灯光之上 */
 .zero2x-wrapper {
   position: relative;
   display: inline-block;
   overflow: hidden;
-  cursor: crosshair;
   line-height: 1;
   width: fit-content;
-  align-self: center;
   isolation: isolate;
+  z-index: 1;
 }
 
-/* 背景填充层：从底部上滑（默认完全藏在下方，避免底部露出一像素蓝边） */
-.zero2x-fill {
-  position: absolute;
-  inset: 0;
-  background: #2E4FFF;
-  transform: translateY(calc(100% + 3px));
-  transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 0;
-}
-
-.zero2x-wrapper:hover .zero2x-fill {
-  transform: translateY(0);
-}
-
-/* 横穿字形的扫描线：品牌蓝（不再用白光芯），叠在字形之上 */
+/* 横穿字形的扫描线：品牌蓝，叠在字形之上；在 logo 入场后再开始循环 */
 .zero2x-scan-line {
   position: absolute;
   left: -3%;
@@ -221,11 +385,11 @@ export default Vue.extend({
     transparent 100%
   );
   box-shadow:
-    0 0 10px rgba(46, 79, 255, 0.85),
-    0 0 22px rgba(46, 79, 255, 0.5);
+    0 0 8px rgba(46, 79, 255, 0.72),
+    0 0 18px rgba(46, 79, 255, 0.42);
   mix-blend-mode: normal;
-  opacity: 0.92;
-  animation: zero2x-line-sweep 3.2s cubic-bezier(0.42, 0.08, 0.58, 0.92) infinite;
+  opacity: 0.94;
+  animation: zero2x-line-sweep 3.2s cubic-bezier(0.42, 0.08, 0.58, 0.92) 1.85s infinite backwards;
 }
 
 @keyframes zero2x-line-sweep {
@@ -245,7 +409,7 @@ export default Vue.extend({
   }
 }
 
-/* zero2x 文字（位于填充之上、扫描线之下） */
+/* zero2x 文字（在扫描线之下） */
 .zero2x-text {
   display: inline-block;
   font-size: clamp(38px, 7vw, 96px);
@@ -259,14 +423,6 @@ export default Vue.extend({
   position: relative;
   z-index: 2;
   padding: 0 8px;
-  transition: color 500ms ease, text-shadow 500ms ease;
-}
-
-/* hover 时文字变深色（反色），停止光晕动画 */
-.zero2x-wrapper:hover .zero2x-text {
-  color: #ffffff;
-  animation-play-state: paused;
-  text-shadow: none;
 }
 
 .hero-taglines {
@@ -307,8 +463,8 @@ export default Vue.extend({
   padding: 14px 22px;
   align-self: center;
   background: rgba(5, 10, 22, 0.72);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: none;
   border-radius: 6px;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.38);
@@ -351,5 +507,38 @@ export default Vue.extend({
   margin: 0 28px 0 0;
   flex-shrink: 0;
   align-self: stretch;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-lamp__beam-shell,
+  .hero-lamp__bar-soft,
+  .hero-lamp__bar {
+    animation: none !important;
+  }
+
+  .hero-lamp__beam-shell {
+    opacity: 1 !important;
+    transform: scale(1, 1) !important;
+  }
+
+  .hero-lamp__bar-soft {
+    opacity: 0.95 !important;
+    transform: translateY(-40%) scaleX(1) !important;
+  }
+
+  .hero-lamp__bar {
+    opacity: 1 !important;
+    transform: scaleX(1) !important;
+  }
+
+  .hero-logo-reveal {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .zero2x-scan-line {
+    animation-delay: 0.05s !important;
+  }
 }
 </style>

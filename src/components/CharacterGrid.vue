@@ -1,5 +1,9 @@
 <template>
-  <div class="character-grid-container absolute inset-0 overflow-hidden pointer-events-none" ref="container">
+  <div
+    class="character-grid-container absolute inset-0 overflow-hidden pointer-events-none"
+    ref="container"
+    :class="{ 'character-grid-container--out': !isInView }"
+  >
     <!-- 从内向外「绽放」显现 + 光晕追随 logo 区域 -->
     <div class="character-grid-stage" :class="{ 'character-grid-stage--subtle': subtle }">
       <div
@@ -15,6 +19,9 @@
 </template>
 
 <script>
+/** ~21fps：减轻大段 DOM 文本重排频率 */
+const GRID_TICK_MS = 48;
+
 export default {
   name: 'CharacterGrid',
   props: {
@@ -34,6 +41,8 @@ export default {
       mouseY: -1000,
       rafId: null,
       tick: 0,
+      isInView: true,
+      visibilityObserver: null,
     };
   },
   computed: {
@@ -67,14 +76,36 @@ export default {
     this.calculateGrid();
     window.addEventListener('resize', this.calculateGrid);
     window.addEventListener('mousemove', this.handleMouseMove);
+    document.addEventListener('visibilitychange', this.onDocVisibility);
+    this.setupVisibilityObserver();
     this.animate();
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.calculateGrid);
     window.removeEventListener('mousemove', this.handleMouseMove);
-    cancelAnimationFrame(this.rafId);
+    document.removeEventListener('visibilitychange', this.onDocVisibility);
+    if (this.visibilityObserver) {
+      this.visibilityObserver.disconnect();
+      this.visibilityObserver = null;
+    }
+    this.clearGridLoop();
   },
   methods: {
+    clearGridLoop() {
+      if (this.rafId !== null) {
+        clearTimeout(this.rafId);
+        this.rafId = null;
+      }
+    },
+    onDocVisibility() {
+      if (typeof document === 'undefined' || document.hidden) {
+        this.clearGridLoop();
+        return;
+      }
+      if (this.isInView && !this.rafId) {
+        this.animate();
+      }
+    },
     calculateGrid() {
       const container = this.$refs.container;
       if (!container) return;
@@ -101,13 +132,42 @@ export default {
       this.mouseX = e.clientX;
       this.mouseY = e.clientY;
     },
+    setupVisibilityObserver() {
+      const el = this.$refs.container;
+      if (!el || typeof IntersectionObserver === 'undefined') {
+        return;
+      }
+      this.visibilityObserver = new IntersectionObserver(
+        (entries) => {
+          const v = entries[0] ? entries[0].isIntersecting : true;
+          if (v && !this.isInView) {
+            this.isInView = true;
+            if (!this.rafId && typeof document !== 'undefined' && !document.hidden) {
+              this.animate();
+            }
+          } else if (!v && this.isInView) {
+            this.isInView = false;
+            this.clearGridLoop();
+          }
+        },
+        { root: null, threshold: 0, rootMargin: '80px 0px 80px 0px' },
+      );
+      this.visibilityObserver.observe(el);
+    },
     animate() {
+      if (!this.isInView || (typeof document !== 'undefined' && document.hidden)) {
+        this.clearGridLoop();
+        return;
+      }
       this.tick++;
-      /* 隔帧刷新矩阵，减轻 CPU */
-      if (this.tick % 2 === 0) {
+      /* 每 3 次调度刷新矩阵，减轻 CPU（视口内仍保持可接受的动感） */
+      if (this.tick % 3 === 0) {
         this.updateGrid();
       }
-      this.rafId = requestAnimationFrame(this.animate);
+      this.rafId = window.setTimeout(() => {
+        this.rafId = null;
+        this.animate();
+      }, GRID_TICK_MS);
     },
     updateGrid() {
       if (this.cols === 0 || this.rows === 0) return;
@@ -166,6 +226,11 @@ export default {
   z-index: 1;
 }
 
+.character-grid-container--out .matrix-spotlight,
+.character-grid-container--out .matrix-shimmer {
+  animation-play-state: paused !important;
+}
+
 .character-grid-stage {
   position: absolute;
   inset: 0;
@@ -217,23 +282,23 @@ export default {
   pointer-events: none;
   background: radial-gradient(
     ellipse 48% 42% at 22% 46%,
-    rgba(110, 130, 255, 0.22) 0%,
+    rgba(120, 145, 255, 0.2) 0%,
     rgba(46, 79, 255, 0.09) 42%,
     transparent 72%
   );
   animation: spotlight-drift 12s ease-in-out infinite alternate;
   mix-blend-mode: screen;
-  opacity: 0.78;
+  opacity: 0.72;
 }
 
 @keyframes spotlight-drift {
   0% {
     transform: translate(-1.5%, -1%) scale(1);
-    opacity: 0.62;
+    opacity: 0.6;
   }
   100% {
     transform: translate(2%, 1.5%) scale(1.06);
-    opacity: 0.82;
+    opacity: 0.84;
   }
 }
 
@@ -245,7 +310,7 @@ export default {
   background: linear-gradient(
     115deg,
     transparent 40%,
-    rgba(255, 255, 255, 0.028) 50%,
+    rgba(255, 255, 255, 0.024) 50%,
     transparent 60%
   );
   background-size: 220% 220%;
@@ -270,7 +335,7 @@ export default {
     transparent 72%
   );
   animation: spotlight-drift-subtle 12s ease-in-out infinite alternate;
-  mix-blend-mode: screen;
+  mix-blend-mode: soft-light;
   opacity: 1;
 }
 

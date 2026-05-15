@@ -15,6 +15,9 @@ export default Vue.extend({
     let dx = -300;
     let dy = -300;
     let rafId = 0;
+    /** 首页整体（.home-container）与视口有交集时才跑跟随 RAF；重新可见后不校正 dx/dy，等下一次 mousemove 再跟手 */
+    let homeViewportActive = true;
+    let homeIo: IntersectionObserver | null = null;
 
     const ring = this.$refs.ring as HTMLElement;
     const HALF = 10; // 半径（直径 20px）
@@ -23,7 +26,15 @@ export default Vue.extend({
     /** 收敛阈值：小于则对齐并停表，避免空转 RAF */
     const EPS = 0.45;
 
+    const setRingVisible = (on: boolean) => {
+      ring.style.opacity = on ? '1' : '0';
+    };
+
     const tick = () => {
+      if (!homeViewportActive) {
+        rafId = 0;
+        return;
+      }
       dx += (mx - dx) * SMOOTH;
       dy += (my - dy) * SMOOTH;
       ring.style.transform = `translate3d(${dx - HALF}px, ${dy - HALF}px, 0)`;
@@ -39,11 +50,13 @@ export default Vue.extend({
     };
 
     const onMove = (e: MouseEvent) => {
+      if (!homeViewportActive) return;
       mx = e.clientX;
       my = e.clientY;
       if (!rafId) rafId = requestAnimationFrame(tick);
     };
     const onLeave = () => {
+      if (!homeViewportActive) return;
       mx = -400;
       my = -400;
       if (!rafId) rafId = requestAnimationFrame(tick);
@@ -52,7 +65,35 @@ export default Vue.extend({
     document.addEventListener('mousemove', onMove, { passive: true });
     document.addEventListener('mouseleave', onLeave, { passive: true });
 
+    const bindHomeViewportObserver = () => {
+      const rootEl =
+        (this.$el as HTMLElement)?.closest?.('.home-container') ??
+        document.querySelector('.home-container');
+      if (!rootEl || typeof IntersectionObserver === 'undefined') {
+        return;
+      }
+      homeIo = new IntersectionObserver(
+        ([e]) => {
+          const on = e ? e.isIntersecting : true;
+          homeViewportActive = on;
+          setRingVisible(on);
+          if (!on && rafId) {
+            cancelAnimationFrame(rafId);
+            rafId = 0;
+          }
+        },
+        { root: null, threshold: 0, rootMargin: '72px 0px 72px 0px' },
+      );
+      homeIo.observe(rootEl);
+    };
+
+    this.$nextTick(() => bindHomeViewportObserver());
+
     (this as any)._cleanup = () => {
+      if (homeIo) {
+        homeIo.disconnect();
+        homeIo = null;
+      }
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseleave', onLeave);
       if (rafId) cancelAnimationFrame(rafId);

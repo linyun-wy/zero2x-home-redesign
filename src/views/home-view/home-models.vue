@@ -1,6 +1,18 @@
 <template>
-  <section style="background:#fff;position:relative;overflow:hidden;">
+  <section
+    style="background:#fff;position:relative;overflow:hidden;"
+    :class="{ 'section-out-of-view': !sectionAnimActive }"
+  >
     <div class="absolute inset-0 pointer-events-none grid-lines" style="z-index:0;"></div>
+    <!-- 代码片段装饰层：DOM 文本元素，浏览器原生渲染确保清晰；CSS 慢速漂浮，不打断注意力 -->
+    <div class="models-code-layer" aria-hidden="true">
+      <pre
+        v-for="(frag, i) in codeFragments"
+        :key="i"
+        class="models-code-frag"
+        :style="frag.style"
+      >{{ frag.text }}</pre>
+    </div>
 
     <div style="max-width:1320px;margin:0 auto;padding:96px 40px 112px;position:relative;z-index:1;">
 
@@ -100,21 +112,139 @@ import logoOneAstronomy from '../../assets/models/model_2.png';
 import logoOnePorous from '../../assets/models/model_3.png';
 import logoGenos from '../../assets/models/model_4.png';
 import SplitReveal from '../../components/SplitReveal.vue';
+import sectionViewportActive from '../../mixins/sectionViewportActive';
 
 export default Vue.extend({
   name: 'HomeModels',
+  mixins: [sectionViewportActive],
   components: { ScrambleText, SplitReveal },
   computed: {
     lang() { return langStore.lang; },
+  },
+  created() {
+    this.codeFragments = this.buildRandomCodeFragments();
   },
   methods: {
     t(key: string) {
       return t(key);
     },
+    /**
+     * 装饰代码块：部分集中在两节标题右侧空白带（截图区），其余在左右边列；互不重叠。
+     */
+    buildRandomCodeFragments(): Array<{ text: string; style: Record<string, string> }> {
+      const pct = (n: number) => `${n.toFixed(2)}%`;
+      const r = (a: number, b: number) => a + Math.random() * (b - a);
+
+      const makeSlots = (
+        vLo: number,
+        vHi: number,
+        hLo: number,
+        hHi: number,
+        rowN: number,
+        colN: number,
+      ): Array<{ h0: number; h1: number; v0: number; v1: number }> => {
+        const out: Array<{ h0: number; h1: number; v0: number; v1: number }> = [];
+        const vSpan = (vHi - vLo) / rowN;
+        const hSpan = (hHi - hLo) / colN;
+        for (let ri = 0; ri < rowN; ri++) {
+          for (let ci = 0; ci < colN; ci++) {
+            const v0 = vLo + ri * vSpan + 0.25;
+            const v1 = vLo + (ri + 1) * vSpan - 0.55;
+            const h0 = hLo + ci * hSpan + 0.25;
+            const h1 = hLo + (ci + 1) * hSpan - 0.45;
+            out.push({ h0, h1, v0, v1 });
+          }
+        }
+        return out;
+      };
+
+      const shuffleInPlace = <T,>(arr: T[]) => {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const t = arr[i];
+          arr[i] = arr[j];
+          arr[j] = t;
+        }
+      };
+
+      const allTexts = [
+        '#2E4FFF\n021.base\n[sigma_x]',
+        'const f =\n  model();\nreturn x;',
+        '{ α: 0.001\n  ε: 1e-8\n  β: 0.98 }',
+        '0xA3F2C1\n021.model\n[ok]→void',
+        'argmax f\n∇θ ≤ 0.01\nlog(P|θ)',
+        '[epoch:021]\n>0.92 acc\n<0.08 loss',
+        'import {\n  Model\n} from "sci"',
+        'n=1_000_000\nΔt = 0.001s\ndataset[*]',
+        'θ[i] += η·∇\n[64, 128, 0]\n/* weights */',
+        'if (model) {\n  return ✓\n}',
+        '#science\n@base_v1\n0x021ABCD',
+        'fn(x) → y\n‖∇θ‖ ≤ ε\n∫f(x)dx',
+        '[✓] trained\nv1.2.0-beta\n021.run()',
+        '0x021\n[β=0.98]\n(n, d, h)',
+      ];
+
+      shuffleInPlace(allTexts);
+
+      /** 主标题 +「领域模型」标题一带的右侧留白（约 23%–72% 宽） */
+      const titlePool = [
+        ...makeSlots(6, 21, 23, 72, 2, 3),
+        ...makeSlots(31, 49, 23, 72, 2, 3),
+      ];
+      shuffleInPlace(titlePool);
+      const TITLE_N = 7;
+      const titleChosen = titlePool.slice(0, TITLE_N);
+
+      const inTitleCorridor = (cx: number, cy: number) =>
+        cx >= 21 &&
+        cx <= 74 &&
+        ((cy >= 4 && cy <= 24) || (cy >= 28 && cy <= 52));
+
+      const rows = 6;
+      const vTop = 5;
+      const vBottom = 92;
+      const vSpan = (vBottom - vTop) / rows;
+      const hBands: [number, number][] = [
+        [0.35, 5.2],
+        [6, 13.5],
+        [86.2, 93.8],
+        [94.5, 99.3],
+      ];
+      const edgePool: Array<{ h0: number; h1: number; v0: number; v1: number }> = [];
+      for (let row = 0; row < rows; row++) {
+        const v0 = vTop + row * vSpan + 0.35;
+        const v1 = vTop + (row + 1) * vSpan - 0.95;
+        for (const band of hBands) {
+          const slot = { h0: band[0], h1: band[1], v0, v1 };
+          const cx = (slot.h0 + slot.h1) / 2;
+          const cy = (slot.v0 + slot.v1) / 2;
+          if (!inTitleCorridor(cx, cy)) edgePool.push(slot);
+        }
+      }
+      shuffleInPlace(edgePool);
+      const EDGE_N = allTexts.length - TITLE_N;
+      const edgeChosen = edgePool.slice(0, EDGE_N);
+
+      const chosen = [...titleChosen, ...edgeChosen];
+      shuffleInPlace(chosen);
+
+      return chosen.map((slot, i) => {
+        const style: Record<string, string> = {
+          left: pct(r(slot.h0, slot.h1)),
+          top: pct(r(slot.v0, slot.v1)),
+        };
+        style['--dur'] = `${r(24, 44).toFixed(1)}s`;
+        style['--delay'] = `-${r(0, 24).toFixed(1)}s`;
+        style['--dist'] = `-${r(14, 32).toFixed(0)}px`;
+        return { text: allTexts[i], style };
+      });
+    },
   },
   data() {
     return {
       logo021Foundation,
+      /** 代码片段：由 created() 随机生成位置 */
+      codeFragments: [] as Array<{ text: string; style: Record<string, string> }>,
       models: [
         {
           key: 'geogpt',
@@ -155,6 +285,44 @@ export default Vue.extend({
 </script>
 
 <style scoped>
+/* ── 代码片段装饰层 ── */
+.models-code-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.models-code-frag {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+  font-size: 11px;
+  line-height: 1.7;
+  font-weight: 400;
+  white-space: pre;
+  color: rgba(46, 79, 255, 0.13);
+  letter-spacing: 0.04em;
+  user-select: none;
+  animation: models-frag-drift var(--dur, 30s) ease-in-out var(--delay, 0s) infinite alternate;
+  will-change: transform;
+}
+
+.section-out-of-view .models-code-frag {
+  animation-play-state: paused !important;
+}
+
+@keyframes models-frag-drift {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(var(--dist, -20px)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .models-code-frag { animation: none; }
+}
+
 /* 科学基础模型区块标题；领域科学模型（domain-heading）与之同字号 */
 .section-heading {
   font-size: clamp(36px, 4.5vw, 60px);

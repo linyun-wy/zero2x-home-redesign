@@ -355,7 +355,7 @@ export default Vue.extend({
             { key: 'itu', labelKey: 'nav.casesITU', externalUrl: 'https://ai4g.zero2x.org/' },
           ],
         },
-        { key: 'news' },
+        { key: 'constellation' },
         { key: 'events' },
       ] as (NavLinkItem | NavDropdownItem)[],
       selectedSite: 'cn' as SiteKey,
@@ -560,8 +560,8 @@ export default Vue.extend({
         this.$router.push({ path: '/', hash: '#section-cases' }).catch(() => {});
       } else if (key === 'events') {
         this.$router.push({ path: '/', hash: '#section-events' }).catch(() => {});
-      } else if (key === 'news') {
-        this.$router.push({ path: '/', hash: '#section-events' }).catch(() => {});
+      } else if (key === 'constellation') {
+        this.$router.push({ path: '/', hash: '#section-constellation' }).catch(() => {});
       }
     },
     syncNavFromRoute() {
@@ -577,6 +577,7 @@ export default Vue.extend({
       }
       if (path === '/') {
         if (hash === '#section-cases') this.activeNav = 'cases';
+        else if (hash === '#section-constellation') this.activeNav = 'constellation';
         else if (hash === '#section-events') this.activeNav = 'events';
         else this.activeNav = 'home';
       }
@@ -951,8 +952,8 @@ export default Vue.extend({
 }
 
 .action-cell:hover {
-  background: #0a0c10;
-  color: #f9faf9;
+  background: var(--brand-blue-600, #2e4fff);
+  color: #ffffff;
 }
 
 .lang-btn .text-micro {

@@ -1,6 +1,10 @@
 <template>
   <!-- 字符颗粒仅在「zero2x」字形区域内生成；跟随鼠标位置即时重绘 -->
-  <div class="ascii-grain-root absolute inset-0 overflow-hidden pointer-events-none select-none" ref="root">
+  <div
+    class="ascii-grain-root absolute inset-0 overflow-hidden pointer-events-none select-none"
+    ref="root"
+    :class="{ 'ascii-grain-root--out': suspendAnimations }"
+  >
     <div class="ascii-grain-stage">
       <pre class="ascii-grain-pre" :style="preStyle">{{ gridText }}</pre>
     </div>
@@ -21,8 +25,15 @@ const LOGO_TEXT = 'zero2x';
 /** 蒙版区域内仅循环使用这些字符，形成「zero2x」氛围矩阵 */
 const LOGO_GRAIN = 'zero2x';
 
+/** ~21fps：ASCII 重排节流 */
+const ASCII_TICK_MS = 48;
+
 export default Vue.extend({
   name: 'AsciiGrainBackdrop',
+  props: {
+    /** 为 true 时停止字符循环并暂停无限 CSS 闪烁（例如父区块离屏） */
+    suspendAnimations: { type: Boolean, default: false },
+  },
   data() {
     return {
       gridText: '',
@@ -55,14 +66,40 @@ export default Vue.extend({
     this.layout();
     window.addEventListener('resize', this.layout);
     window.addEventListener('mousemove', this.onMove);
+    document.addEventListener('visibilitychange', this.onDocVisibility);
     this.loop();
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.layout);
     window.removeEventListener('mousemove', this.onMove);
-    if (this.rafId !== null) cancelAnimationFrame(this.rafId);
+    document.removeEventListener('visibilitychange', this.onDocVisibility);
+    this.clearAsciiLoop();
+  },
+  watch: {
+    suspendAnimations(suspend: boolean) {
+      if (suspend) {
+        this.clearAsciiLoop();
+      } else if (this.rafId === null && typeof document !== 'undefined' && !document.hidden) {
+        this.loop();
+      }
+    },
   },
   methods: {
+    clearAsciiLoop() {
+      if (this.rafId !== null) {
+        clearTimeout(this.rafId);
+        this.rafId = null;
+      }
+    },
+    onDocVisibility() {
+      if (typeof document === 'undefined' || document.hidden) {
+        this.clearAsciiLoop();
+        return;
+      }
+      if (!this.suspendAnimations && this.rafId === null) {
+        this.loop();
+      }
+    },
     layout() {
       const el = this.$refs.root as HTMLElement | undefined;
       if (!el) return;
@@ -196,9 +233,19 @@ export default Vue.extend({
     },
 
     loop() {
+      if (
+        this.suspendAnimations ||
+        (typeof document !== 'undefined' && document.hidden)
+      ) {
+        this.clearAsciiLoop();
+        return;
+      }
       this.tick++;
-      if (this.tick % 2 === 0) this.scatter();
-      this.rafId = requestAnimationFrame(this.loop);
+      if (this.tick % 3 === 0) this.scatter();
+      this.rafId = window.setTimeout(() => {
+        this.rafId = null;
+        this.loop();
+      }, ASCII_TICK_MS);
     },
 
     scatter() {
@@ -253,6 +300,10 @@ export default Vue.extend({
 <style scoped>
 .ascii-grain-root {
   z-index: 0;
+}
+
+.ascii-grain-root--out .ascii-grain-shimmer {
+  animation-play-state: paused !important;
 }
 
 .ascii-grain-stage {

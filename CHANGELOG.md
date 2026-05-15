@@ -1,0 +1,41 @@
+# 变更记录
+
+## [未发布] — 2026-05-14
+
+### 站点与资源
+
+- 浏览器标签标题由占位文案改为 **`zero2x`**（`index.html`、`reference/index.html`）。
+- 更新 **`public/o2x-lab-logo.png`**。
+- 新增 **`public/orbit-models/`** 轨道案例相关配图资源。
+
+### 导航与文案
+
+- 原「南湖」区块更名为 **「三体计算星座」**（英文 **Three-body Constellation**）：路由/锚点、`Header`、`Footer`、`src/lang/index.ts` 等与首页 `index.vue` 引用同步。
+- 视图文件 **`home-nanhu.vue`** 移除，由 **`home-constellation.vue`**（`HomeConstellation`）替代。
+
+### 首页与模块视觉
+
+- **`home-zero2x`**：首屏动效与灯带/氛围层等调整；接入 **`MatrixSpectralLayer`** 等组件。
+- **`home-models`**、**`home-021`**、**`home-haina`**、**`home-cases`**、**`home-events`**：配套样式或内容更新。
+- **三体计算星座区**：**`OrbilonBackdrop`** 星场背景；**`WireframeSphere`** 线框球；**标题与卫星可视化列间距**收紧，线框球更靠近主标题。
+- **`LabGenosView`**：小幅调整。
+
+### 性能与行为
+
+- **`OrbilonBackdrop`**：入场静止阶段改用 **低频率 `setTimeout`**，动画阶段保留 RAF；**`paused`** 与销毁时统一清理 RAF/定时器；**画布绘制 DPR 上限**、粒子密度调整；**`document.visibilitychange`** 在后台停止调度。
+- **`CharacterGrid`**：视口与 **`visibilitychange`** 下停止循环；矩阵刷新改为 **`setTimeout` 节流**（约 48ms 调度）。
+- **`AsciiGrainBackdrop`**：同上 **`visibilitychange`** + **`setTimeout`** 节流；与 **`suspendAnimations`** 一致清理。
+- **`CustomCursor`**：按首页容器优化启停/绘制节奏。
+
+### 组件生命周期
+
+- 删除未使用的 **`CharacterGridBackground.vue`**。
+- **`WireframeSphere`**：支持静态帧、离屏暂停等（与星座区块用法一致）。
+
+### 工程
+
+- 新增 **`src/components/MatrixSpectralLayer.vue`**、`src/mixins/` 等相关代码。
+
+---
+
+*此文件随发布可改为带版本号的章节（例如 `## [1.x.x]`）。*

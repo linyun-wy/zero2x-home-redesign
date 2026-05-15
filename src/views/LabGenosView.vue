@@ -10,8 +10,8 @@
             class="genos-hero-logo"
             src="/o2x-lab-logo.png"
             alt="02X Lab"
-            width="133"
-            height="24"
+            width="5787"
+            height="1044"
             loading="eager"
             decoding="async"
           />
@@ -269,9 +269,8 @@ export default Vue.extend({
 .genos-hero-logo {
   display: block;
   width: auto;
-  height: auto;
-  max-width: min(100%, 300px);
-  max-height: 72px;
+  height: 40px;
+  max-width: 100%;
   object-fit: contain;
   object-position: left center;
 }

@@ -1,5 +1,9 @@
 <template>
-  <section id="section-02x-lab" style="background:#f9faf9;position:relative;overflow:hidden;">
+  <section
+    id="section-02x-lab"
+    :class="{ 'section-out-of-view': !sectionAnimActive }"
+    style="background:#f9faf9;position:relative;overflow:hidden;"
+  >
     <div class="absolute inset-0 pointer-events-none grid-lines" style="z-index:0;"></div>
 
     <div style="max-width:1320px;margin:0 auto;padding:96px 40px 112px;position:relative;z-index:1;">
@@ -16,8 +20,8 @@
               class="lab-logo-title"
               src="/o2x-lab-logo.png"
               alt="02X Lab"
-              width="133"
-              height="24"
+              width="5787"
+              height="1044"
               loading="lazy"
               decoding="async"
             />
@@ -25,10 +29,10 @@
 
           <p class="lab-desc" v-reveal="{ delay: 100, dir: 'left' }">
             <template v-if="lang === 'zh'">
-              02x Lab 是以科学家为中心的<strong>AI原生智能体操作平台</strong>，融合算力、模型与智能体，旨在实现多智能体驱动的<strong>自主科学发现循环</strong>，构建开放的全球科学智能生态。
+              02X Lab 是以科学家为中心的<strong>AI原生智能体操作平台</strong>，融合算力、模型与智能体，旨在实现多智能体驱动的<strong>自主科学发现循环</strong>，构建开放的全球科学智能生态。
             </template>
             <template v-else>
-              02x Lab is a scientist-centric <strong>AI-native agent operating platform</strong> that unifies compute, models, and agents to enable <strong>multi-agent autonomous scientific discovery</strong> and an open global ecosystem for scientific intelligence.
+              02X Lab is a scientist-centric <strong>AI-native agent operating platform</strong> that unifies compute, models, and agents to enable <strong>multi-agent autonomous scientific discovery</strong> and an open global ecosystem for scientific intelligence.
             </template>
           </p>
 
@@ -72,9 +76,11 @@
 import Vue from 'vue';
 import { langStore } from '../../lang/index';
 import ScrambleText from '../../components/ScrambleText.vue';
+import sectionViewportActive from '../../mixins/sectionViewportActive.js';
 
 export default Vue.extend({
   name: 'Home021',
+  mixins: [sectionViewportActive],
   components: { ScrambleText },
   computed: {
     lang() { return langStore.lang; },
@@ -101,6 +107,7 @@ export default Vue.extend({
   .lab-layout { grid-template-columns: 1fr; gap: 48px; }
 }
 
+/* Logo 行布局与下边距；Logo 显示高度由 .lab-logo-title 控制 */
 .lab-title-row {
   margin: 0 0 28px;
 }
@@ -108,9 +115,8 @@ export default Vue.extend({
 .lab-logo-title {
   display: block;
   width: auto;
-  height: auto;
-  max-width: min(100%, 260px);
-  max-height: 52px;
+  height: 45px;
+  max-width: 100%;
   object-fit: contain;
   object-position: left center;
 }

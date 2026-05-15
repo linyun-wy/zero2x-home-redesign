@@ -1,5 +1,9 @@
 <template>
-  <section id="section-cases" style="background:#f4f5f7;position:relative;overflow:hidden;">
+  <section
+    id="section-cases"
+    :class="{ 'section-out-of-view': !sectionAnimActive }"
+    style="background:#f4f5f7;position:relative;overflow:hidden;"
+  >
     <div class="absolute inset-0 pointer-events-none grid-lines" style="z-index:0;"></div>
 
     <div style="max-width:1320px;margin:0 auto;padding:100px 40px 120px;position:relative;z-index:1;">
@@ -76,9 +80,11 @@ import Vue from 'vue';
 import { langStore } from '../../lang/index';
 import ScrambleText from '../../components/ScrambleText.vue';
 import SplitReveal from '../../components/SplitReveal.vue';
+import sectionViewportActive from '../../mixins/sectionViewportActive.js';
 
 export default Vue.extend({
   name: 'HomeCases',
+  mixins: [sectionViewportActive],
   components: { ScrambleText, SplitReveal },
   data() {
     return {

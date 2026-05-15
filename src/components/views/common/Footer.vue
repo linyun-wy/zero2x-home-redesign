@@ -22,11 +22,12 @@
         <div>
           <h4 style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;font-weight:700;color:rgba(0,0,0,0.35);margin:0 0 20px;border-bottom:1px solid rgba(0,0,0,0.07);padding-bottom:12px;">{{ t('footer.learnMore') }}</h4>
           <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px;">
-            <li><a href="javascript:void(0);" class="footer-link">{{ t('footer.home') }}</a></li>
-            <li><a href="javascript:void(0);" class="footer-link">{{ t('footer.resource') }}</a></li>
-            <li><a href="javascript:void(0);" class="footer-link">{{ t('footer.cases') }}</a></li>
-            <li><a href="javascript:void(0);" class="footer-link">{{ t('footer.news') }}</a></li>
-            <li><a href="javascript:void(0);" class="footer-link">{{ t('footer.events') }}</a></li>
+            <li><router-link to="/" exact class="footer-link">{{ t('footer.home') }}</router-link></li>
+            <li><router-link to="/lab/genos" class="footer-link">{{ t('footer.lab') }}</router-link></li>
+            <li><router-link to="/data" class="footer-link">{{ t('footer.data') }}</router-link></li>
+            <li><router-link :to="{ path: '/', hash: '#section-cases' }" class="footer-link">{{ t('footer.cases') }}</router-link></li>
+            <li><router-link :to="{ path: '/', hash: '#section-constellation' }" class="footer-link">{{ t('footer.constellation') }}</router-link></li>
+            <li><router-link :to="{ path: '/', hash: '#section-events' }" class="footer-link">{{ t('footer.events') }}</router-link></li>
           </ul>
         </div>
 

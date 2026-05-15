@@ -1,5 +1,8 @@
 <template>
-  <section style="background:#f4f5f7;position:relative;overflow:hidden;">
+  <section
+    style="background:#f4f5f7;position:relative;overflow:hidden;"
+    :class="{ 'section-out-of-view': !sectionAnimActive }"
+  >
     <div class="absolute inset-0 pointer-events-none grid-lines" style="z-index:0;"></div>
 
     <div style="max-width:1320px;margin:0 auto;padding:100px 40px 120px;position:relative;z-index:1;">
@@ -39,9 +42,9 @@
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid rgba(0,0,0,0.07);">
               <span class="text-micro" style="color:#2e4fff;">DATA_FLOW / ACTIVE</span>
               <div style="display:flex;gap:4px;">
-                <div style="width:4px;height:12px;background:#2e4fff;animation:bar 1.2s ease-in-out infinite;"></div>
-                <div style="width:4px;height:8px;background:#2e4fff;animation:bar 1.2s ease-in-out 0.2s infinite;"></div>
-                <div style="width:4px;height:16px;background:#2e4fff;animation:bar 1.2s ease-in-out 0.4s infinite;"></div>
+                <div class="haina-eq-bar haina-eq-bar--tall"></div>
+                <div class="haina-eq-bar haina-eq-bar--mid"></div>
+                <div class="haina-eq-bar haina-eq-bar--max"></div>
               </div>
             </div>
             <div class="haina-text">
@@ -67,8 +70,10 @@ import Vue from 'vue';
 import { langStore } from '../../lang/index';
 import ScrambleText from '../../components/ScrambleText.vue';
 import SplitReveal from '../../components/SplitReveal.vue';
+import sectionViewportActive from '../../mixins/sectionViewportActive';
 export default Vue.extend({
   name: 'HomeHaina',
+  mixins: [sectionViewportActive],
   components: { ScrambleText, SplitReveal },
   computed: {
     lang() { return langStore.lang; },
@@ -167,6 +172,31 @@ export default Vue.extend({
 }
 
 .haina-text p:last-child { margin: 0; }
+
+.haina-eq-bar {
+  width: 4px;
+  background: #2e4fff;
+  animation: bar 1.2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.haina-eq-bar--tall {
+  height: 12px;
+}
+
+.haina-eq-bar--mid {
+  height: 8px;
+  animation-delay: 0.2s;
+}
+
+.haina-eq-bar--max {
+  height: 16px;
+  animation-delay: 0.4s;
+}
+
+.section-out-of-view .haina-eq-bar {
+  animation-play-state: paused !important;
+}
 
 @keyframes bar {
   0%, 100% { transform: scaleY(1); }
