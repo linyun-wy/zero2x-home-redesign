@@ -202,12 +202,6 @@ h1, h2, h3, h4, h5, h6 {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* zero2x 文字光晕呼吸 */
-@keyframes glow-breathe {
-  0%, 100% { text-shadow: 0 0 40px rgba(46,79,255,0.3), 0 0 80px rgba(46,79,255,0.1); }
-  50%       { text-shadow: 0 0 80px rgba(46,79,255,0.6), 0 0 120px rgba(46,79,255,0.2); }
-}
-
 /* 下划线从左扩展 */
 @keyframes slide-in-right {
   from { transform: scaleX(0); }

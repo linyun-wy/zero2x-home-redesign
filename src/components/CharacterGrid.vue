@@ -43,32 +43,36 @@ export default {
       tick: 0,
       isInView: true,
       visibilityObserver: null,
+      /** ≤480px：首页矩阵字号放大，与 calculateGrid / updateGrid 单元对齐 */
+      narrowViewport: false,
     };
   },
   computed: {
     gridStyle() {
+      const narrow = this.narrowViewport;
+      const fs = narrow ? '16px' : '13px';
+      const lh = narrow ? '19px' : '15px';
       if (this.subtle) {
         return {
           display: 'block',
           width: '100%',
           height: '100%',
-          fontSize: '13px',
-          lineHeight: '15px',
-          color: 'rgba(125, 152, 212, 0.16)',
+          fontSize: fs,
+          lineHeight: lh,
+          color: 'rgba(125, 152, 212, 0.10)',
           opacity: '1',
-          textShadow: '0 0 8px rgba(46, 79, 255, 0.045)',
+          textShadow: '0 0 6px rgba(46, 79, 255, 0.03)',
         };
       }
       return {
         display: 'block',
         width: '100%',
         height: '100%',
-        fontSize: '13px',
-        lineHeight: '15px',
-        /* 略强于上一版，保持克制（弱化），避免糊成一片又不会像看不见 */
-        color: 'rgba(125, 152, 212, 0.46)',
+        fontSize: fs,
+        lineHeight: lh,
+        color: 'rgba(125, 152, 212, 0.30)',
         opacity: '1',
-        textShadow: '0 0 14px rgba(46, 79, 255, 0.16)',
+        textShadow: '0 0 10px rgba(46, 79, 255, 0.08)',
       };
     },
   },
@@ -110,8 +114,10 @@ export default {
       const container = this.$refs.container;
       if (!container) return;
 
-      const charWidth = 7;
-      const charHeight = 15;
+      this.narrowViewport = typeof window !== 'undefined' && window.innerWidth <= 480;
+      const narrow = this.narrowViewport;
+      const charWidth = narrow ? 9 : 7;
+      const charHeight = narrow ? 19 : 15;
 
       this.cols = Math.floor(container.clientWidth / charWidth);
       this.rows = Math.floor(container.clientHeight / charHeight);
@@ -177,8 +183,9 @@ export default {
       const relX = this.mouseX - rect.left;
       const relY = this.mouseY - rect.top;
 
-      const charWidth = 7;
-      const charHeight = 15;
+      const narrow = this.narrowViewport;
+      const charWidth = narrow ? 9 : 7;
+      const charHeight = narrow ? 19 : 15;
 
       const mouseCol = Math.floor(relX / charWidth);
       const mouseRow = Math.floor(relY / charHeight);
@@ -207,7 +214,7 @@ export default {
             newRow += this.chars[Math.floor(Math.random() * this.chars.length)];
           } else if (distLogo < 12 && Math.random() > wave) {
             newRow += this.chars[Math.floor(Math.random() * this.chars.length)];
-          } else if (Math.random() > 0.9985) {
+          } else if (Math.random() > 0.9992) {
             newRow += this.chars[Math.floor(Math.random() * this.chars.length)];
           } else {
             newRow += rowStr[c] || ' ';
@@ -244,13 +251,13 @@ export default {
     filter: brightness(0.35) saturate(0.7);
   }
   55% {
-    opacity: 0.92;
-    filter: brightness(0.92) saturate(1.05);
+    opacity: 0.62;
+    filter: brightness(0.88) saturate(1.02);
   }
   100% {
     clip-path: circle(160% at 22% 46%);
-    opacity: 0.93;
-    filter: brightness(1.03) saturate(0.96);
+    opacity: 0.66;
+    filter: brightness(0.98) saturate(0.94);
   }
 }
 
@@ -266,12 +273,12 @@ export default {
     filter: brightness(1.05) saturate(0.85);
   }
   55% {
-    opacity: 0.34;
+    opacity: 0.26;
     filter: brightness(1.04) saturate(0.9);
   }
   100% {
     clip-path: circle(160% at 22% 46%);
-    opacity: 0.38;
+    opacity: 0.30;
     filter: brightness(1.02) saturate(0.88);
   }
 }
@@ -282,23 +289,23 @@ export default {
   pointer-events: none;
   background: radial-gradient(
     ellipse 48% 42% at 22% 46%,
-    rgba(120, 145, 255, 0.2) 0%,
-    rgba(46, 79, 255, 0.09) 42%,
+    rgba(120, 145, 255, 0.11) 0%,
+    rgba(46, 79, 255, 0.05) 42%,
     transparent 72%
   );
   animation: spotlight-drift 12s ease-in-out infinite alternate;
   mix-blend-mode: screen;
-  opacity: 0.72;
+  opacity: 0.5;
 }
 
 @keyframes spotlight-drift {
   0% {
     transform: translate(-1.5%, -1%) scale(1);
-    opacity: 0.6;
+    opacity: 0.38;
   }
   100% {
     transform: translate(2%, 1.5%) scale(1.06);
-    opacity: 0.84;
+    opacity: 0.52;
   }
 }
 
@@ -310,7 +317,7 @@ export default {
   background: linear-gradient(
     115deg,
     transparent 40%,
-    rgba(255, 255, 255, 0.024) 50%,
+    rgba(255, 255, 255, 0.012) 50%,
     transparent 60%
   );
   background-size: 220% 220%;
@@ -330,8 +337,8 @@ export default {
 .character-grid-stage--subtle .matrix-spotlight {
   background: radial-gradient(
     ellipse 48% 42% at 22% 46%,
-    rgba(110, 130, 255, 0.08) 0%,
-    rgba(46, 79, 255, 0.03) 42%,
+    rgba(110, 130, 255, 0.05) 0%,
+    rgba(46, 79, 255, 0.02) 42%,
     transparent 72%
   );
   animation: spotlight-drift-subtle 12s ease-in-out infinite alternate;
@@ -340,11 +347,11 @@ export default {
 }
 
 .character-grid-stage--subtle .matrix-shimmer {
-  opacity: 0.45;
+  opacity: 0.35;
   background: linear-gradient(
     115deg,
     transparent 40%,
-    rgba(255, 255, 255, 0.015) 50%,
+    rgba(255, 255, 255, 0.01) 50%,
     transparent 60%
   );
 }
@@ -352,11 +359,11 @@ export default {
 @keyframes spotlight-drift-subtle {
   0% {
     transform: translate(-1.5%, -1%) scale(1);
-    opacity: 0.18;
+    opacity: 0.12;
   }
   100% {
     transform: translate(2%, 1.5%) scale(1.06);
-    opacity: 0.3;
+    opacity: 0.22;
   }
 }
 

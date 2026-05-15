@@ -39,6 +39,10 @@ const io: IntersectionObserver | null =
 
 Vue.directive('reveal', {
   inserted(el, binding) {
+    /* 窄屏上 IntersectionObserver + 位移易导致栅格「半截不见」，直接展示 */
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches) {
+      return;
+    }
     // 元素在首屏内（页面初始可见区域）时跳过动画，直接可见
     const rect = el.getBoundingClientRect();
     if (rect.top < window.innerHeight * 0.95 && rect.bottom > 0) {

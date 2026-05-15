@@ -11,11 +11,6 @@
           <router-link to="/" class="footer-logo-link">
             <span class="footer-logo-wordmark">zero2x</span>
           </router-link>
-          <p style="font-size:13px;line-height:1.7;color:#777f8f;margin:0;max-width:260px;">
-            {{ lang === 'zh'
-              ? '全球性开放科学基础设施，推动"人工智能+科学"融合发展'
-              : 'A global open science infrastructure to advance AI + Science' }}
-          </p>
         </div>
 
         <!-- 了解更多 -->
@@ -24,9 +19,10 @@
           <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px;">
             <li><router-link to="/" exact class="footer-link">{{ t('footer.home') }}</router-link></li>
             <li><router-link to="/lab/genos" class="footer-link">{{ t('footer.lab') }}</router-link></li>
+            <li><router-link :to="{ path: '/', hash: '#section-models' }" class="footer-link">{{ t('footer.models') }}</router-link></li>
             <li><router-link to="/data" class="footer-link">{{ t('footer.data') }}</router-link></li>
             <li><router-link :to="{ path: '/', hash: '#section-cases' }" class="footer-link">{{ t('footer.cases') }}</router-link></li>
-            <li><router-link :to="{ path: '/', hash: '#section-constellation' }" class="footer-link">{{ t('footer.constellation') }}</router-link></li>
+            <li><router-link to="/" class="footer-link">{{ t('footer.constellation') }}</router-link></li>
             <li><router-link :to="{ path: '/', hash: '#section-events' }" class="footer-link">{{ t('footer.events') }}</router-link></li>
           </ul>
         </div>
@@ -65,15 +61,10 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { langStore, t } from '../../../lang/index';
+import { t } from '../../../lang/index';
 
 export default Vue.extend({
   name: 'CommonFooter',
-  computed: {
-    lang() {
-      return langStore.lang;
-    },
-  },
   methods: {
     t(key: string) {
       return t(key);
@@ -100,12 +91,12 @@ export default Vue.extend({
   display: inline-flex;
   align-items: center;
   text-decoration: none;
-  margin-bottom: 16px;
+  margin-bottom: 0;
   width: fit-content;
 }
 
 .footer-logo-wordmark {
-  font-size: clamp(17px, 1.85vw, 21px);
+  font-size: 21px;
   font-weight: 900;
   letter-spacing: -0.04em;
   font-family: var(--font-display, 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif);

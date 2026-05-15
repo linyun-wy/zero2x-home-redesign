@@ -100,13 +100,22 @@ export default Vue.extend({
   .haina-layout { grid-template-columns: 1fr; gap: 48px; }
 }
 
+/* 与 home-models 领域科学模型（.domain-heading）同款阶梯字号 */
 .haina-heading {
   font-size: clamp(36px, 4.5vw, 60px);
-  font-weight: 900;
-  letter-spacing: -0.04em;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   color: #0a0c10;
   margin: 0 0 36px;
   line-height: 1.05;
+}
+
+@media (max-width: 640px) {
+  .haina-heading {
+    font-size: clamp(28px, 8.5vw, 44px);
+    line-height: 1.08;
+    margin-bottom: 24px;
+  }
 }
 
 .haina-quote {

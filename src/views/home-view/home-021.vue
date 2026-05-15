@@ -9,32 +9,34 @@
     <div style="max-width:1320px;margin:0 auto;padding:96px 40px 112px;position:relative;z-index:1;">
       <div class="lab-layout">
 
-        <!-- 左侧：Logo 标题 + 平台介绍 + CTA -->
-        <div class="lab-text">
-          <span class="text-micro lab-kicker">
-            <ScrambleText text="02 / AI WORKBENCH" />
-          </span>
+        <!-- 左列：文案 + CTA（窄屏用 display:contents + order，使按钮落到预览图下方） -->
+        <div class="lab-col-left">
+          <div class="lab-text">
+            <span class="text-micro lab-kicker">
+              <ScrambleText text="02 / AI WORKBENCH" />
+            </span>
 
-          <div class="lab-title-row" v-reveal="{ delay: 40, dir: 'left' }">
-            <img
-              class="lab-logo-title"
-              src="/o2x-lab-logo.png"
-              alt="02X Lab"
-              width="5787"
-              height="1044"
-              loading="lazy"
-              decoding="async"
-            />
+            <div class="lab-title-row" v-reveal="{ delay: 40, dir: 'left' }">
+              <img
+                class="lab-logo-title"
+                src="/o2x-lab-logo.png"
+                alt="02X Lab"
+                width="5787"
+                height="1044"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+
+            <p class="lab-desc" v-reveal="{ delay: 100, dir: 'left' }">
+              <template v-if="lang === 'zh'">
+                02X Lab 是以科学家为中心的<strong>AI原生智能体操作平台</strong>，融合算力、模型与智能体，旨在实现多智能体驱动的<strong>自主科学发现循环</strong>，构建开放的全球科学智能生态。
+              </template>
+              <template v-else>
+                02X Lab is a scientist-centric <strong>AI-native agent operating platform</strong> that unifies compute, models, and agents to enable <strong>multi-agent autonomous scientific discovery</strong> and an open global ecosystem for scientific intelligence.
+              </template>
+            </p>
           </div>
-
-          <p class="lab-desc" v-reveal="{ delay: 100, dir: 'left' }">
-            <template v-if="lang === 'zh'">
-              02X Lab 是以科学家为中心的<strong>AI原生智能体操作平台</strong>，融合算力、模型与智能体，旨在实现多智能体驱动的<strong>自主科学发现循环</strong>，构建开放的全球科学智能生态。
-            </template>
-            <template v-else>
-              02X Lab is a scientist-centric <strong>AI-native agent operating platform</strong> that unifies compute, models, and agents to enable <strong>multi-agent autonomous scientific discovery</strong> and an open global ecosystem for scientific intelligence.
-            </template>
-          </p>
 
           <button class="lab-cta" v-reveal="{ delay: 200, dir: 'left' }" data-cursor="view">
             {{ lang === 'zh' ? '立即体验' : 'Start now' }}
@@ -96,6 +98,13 @@ export default Vue.extend({
   letter-spacing: 0.3em;
 }
 
+.lab-col-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
 .lab-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -107,6 +116,33 @@ export default Vue.extend({
   .lab-layout { grid-template-columns: 1fr; gap: 48px; }
 }
 
+/* 375 档及窄屏：单栏时预览在上、CTA 沉底（文案 → 图 → 按钮） */
+@media (max-width: 639px) {
+  .lab-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .lab-col-left {
+    display: contents;
+  }
+
+  .lab-text {
+    order: 1;
+  }
+
+  .lab-visual {
+    order: 2;
+  }
+
+  .lab-cta {
+    order: 3;
+    align-self: flex-start;
+    margin-top: 4px;
+  }
+}
+
 /* Logo 行布局与下边距；Logo 显示高度由 .lab-logo-title 控制 */
 .lab-title-row {
   margin: 0 0 28px;
@@ -115,10 +151,30 @@ export default Vue.extend({
 .lab-logo-title {
   display: block;
   width: auto;
-  height: 45px;
+  height: clamp(30px, 8vw, 45px);
   max-width: 100%;
   object-fit: contain;
   object-position: left center;
+}
+
+@media (max-width: 480px) {
+  .lab-layout .lab-text {
+    min-width: 0;
+  }
+
+  .lab-kicker {
+    margin-bottom: 12px;
+  }
+
+  .lab-title-row {
+    margin-bottom: 20px;
+  }
+
+  .lab-desc {
+    max-width: none;
+    font-size: 14px;
+    line-height: 1.72;
+  }
 }
 
 .lab-desc {

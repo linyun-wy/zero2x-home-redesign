@@ -1,6 +1,6 @@
 <template>
   <section
-    class="hero-section relative overflow-hidden text-white"
+    class="hero-section relative text-white"
     :class="{ 'section-out-of-view': !sectionAnimActive }"
   >
     <!-- 背景字符矩阵 -->
@@ -93,20 +93,22 @@ export default Vue.extend({
 
 <style scoped>
 .hero-section {
-  background: #0a0c10;
-  /* 与改版前接近；灯光为叠加层不再额外占栏高 */
+  /* 方案 B：午夜钢蓝竖直渐变，取代纯黑底 */
+  background: linear-gradient(180deg, #1b2438 0%, #101620 100%);
   min-height: 430px;
   max-height: min(520px, 72vh);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 /* 区块离屏：暂停无限 CSS 动画（CharacterGrid 自有 IO 停 RAF，彩光在组件内一并暂停） */
 .hero-section.section-out-of-view .hero-lamp__beam-shell,
 .hero-section.section-out-of-view .hero-lamp__bar-soft,
 .hero-section.section-out-of-view .hero-lamp__bar,
-.hero-section.section-out-of-view .zero2x-scan-line {
+.hero-section.section-out-of-view .zero2x-scan-line,
+.hero-section.section-out-of-view .zero2x-text {
   animation-play-state: paused !important;
 }
 
@@ -345,19 +347,20 @@ export default Vue.extend({
 }
 
 .hero-gradient-veil {
+  /* 减薄罩层，让矩阵与彩光更透气（方案 B） */
   background: linear-gradient(
     135deg,
-    rgba(5, 12, 26, 0.68) 0%,
-    rgba(10, 18, 46, 0.60) 48%,
-    rgba(5, 12, 26, 0.68) 100%
+    rgba(5, 12, 26, 0.40) 0%,
+    rgba(10, 18, 46, 0.36) 48%,
+    rgba(5, 12, 26, 0.40) 100%
   );
 }
 
-/* zero2x：宽度紧贴文字；叠在灯光之上 */
+/* zero2x：宽度紧贴文字；垂向 shadow 需可见，故不用 overflow:hidden 裁切 */
 .zero2x-wrapper {
   position: relative;
   display: inline-block;
-  overflow: hidden;
+  overflow: visible;
   line-height: 1;
   width: fit-content;
   isolation: isolate;
@@ -409,20 +412,57 @@ export default Vue.extend({
   }
 }
 
-/* zero2x 文字（在扫描线之下） */
+/* zero2x：375 锚定约 4rem、1920 顶到 6rem，中间随视口宽度线性插值，无 640 断点跳跃 */
 .zero2x-text {
   display: inline-block;
-  font-size: clamp(38px, 7vw, 96px);
+  font-size: clamp(
+    3.625rem,
+    calc(4rem + (100vw - 23.4375rem) * 32 / 1545),
+    6rem
+  );
   font-weight: 900;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.045em;
   color: #ffffff;
   font-family: var(--font-display, 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif);
-  animation: glow-breathe 4s ease-in-out infinite;
+  /* 顶光约 1.94s 收束：阴影略晚起势、更短促渐显；蓝光呼吸再晚半拍 */
+  animation:
+    zero2x-drop-reveal 0.48s cubic-bezier(0.33, 1, 0.32, 1) 1.72s forwards,
+    zero2x-blue-pulse 4s ease-in-out 2.08s infinite;
   line-height: 1;
   white-space: nowrap;
   position: relative;
   z-index: 2;
   padding: 0 8px;
+}
+
+@keyframes zero2x-drop-reveal {
+  from {
+    filter: brightness(1.03) drop-shadow(0 0 0 transparent);
+  }
+  to {
+    filter:
+      brightness(1.03)
+      drop-shadow(0 4px 6px rgba(0, 0, 0, 0.45))
+      drop-shadow(0 10px 16px rgba(0, 0, 0, 0.38))
+      drop-shadow(0 18px 28px rgba(0, 0, 0, 0.28))
+      drop-shadow(0 26px 44px rgba(0, 0, 0, 0.16));
+  }
+}
+
+@keyframes zero2x-blue-pulse {
+  0%,
+  100% {
+    text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.1),
+      0 8px 26px rgba(46, 79, 255, 0.2),
+      0 14px 38px rgba(46, 79, 255, 0.08);
+  }
+  50% {
+    text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.14),
+      0 10px 30px rgba(46, 79, 255, 0.32),
+      0 18px 44px rgba(46, 79, 255, 0.12);
+  }
 }
 
 .hero-taglines {
@@ -509,6 +549,38 @@ export default Vue.extend({
   align-self: stretch;
 }
 
+/* 移动端/窄视口：布局与内边距；字号由上方全局流体公式连续缩放，不在此处改 font-size */
+@media (max-width: 640px) {
+  .hero-logo-stack {
+    max-width: min(100%, calc(100vw - 16px));
+    margin: 0 auto;
+  }
+
+  .zero2x-text {
+    padding: 0 3px;
+  }
+
+  .hero-lamp {
+    top: calc(-50px - 4px);
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .hero-section {
+    min-height: min(560px, 72vh);
+    max-height: min(780px, 90vh);
+  }
+
+  .hero-inner {
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+    padding-top: 36px;
+    padding-bottom: 44px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-lamp__beam-shell,
   .hero-lamp__bar-soft,
@@ -539,6 +611,17 @@ export default Vue.extend({
 
   .zero2x-scan-line {
     animation-delay: 0.05s !important;
+  }
+
+  .zero2x-text {
+    animation: none !important;
+    filter:
+      brightness(1.03)
+      drop-shadow(0 4px 6px rgba(0, 0, 0, 0.45))
+      drop-shadow(0 12px 20px rgba(0, 0, 0, 0.3)) !important;
+    text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.1),
+      0 8px 26px rgba(46, 79, 255, 0.22) !important;
   }
 }
 </style>

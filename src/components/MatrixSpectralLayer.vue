@@ -44,7 +44,7 @@ export default Vue.extend({
   transform: translate(-50%, -50%);
   /* 深色首屏：screen 比 soft-light 更「出气」，区域仍局部故 GPU 可接受 */
   mix-blend-mode: screen;
-  opacity: 0.7;
+  opacity: 0.86;
   animation: matrix-spectral-hue 24s ease-in-out infinite alternate;
 }
 

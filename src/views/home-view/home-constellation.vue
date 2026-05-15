@@ -127,13 +127,17 @@
         </template>
       </p>
 
-      <!-- 主内容区：左侧路线图，右侧模型轮播 -->
-      <div class="orbital-layout" :class="{ 'orbital-layout--en': lang !== 'zh' }">
+      <!-- 主内容区：左侧路线图，右侧模型轮播（整栅统一入场，避免仅左栏淡入） -->
+      <div
+        class="orbital-layout"
+        :class="{ 'orbital-layout--en': lang !== 'zh' }"
+        v-reveal="{ delay: 96, dir: 'fade' }"
+      >
 
         <!-- 左侧：路线图独占一列 -->
         <div class="orbital-left" :style="{ '--orbital-autoplay-ms': orbitalAutoplayIntervalMs + 'ms' }">
           <!-- 建设路线：三阶段自动轮播；卡片式包装与右侧呼应 -->
-          <div class="orbital-roadmap" v-reveal="{ delay: 120 }">
+          <div class="orbital-roadmap">
             <p class="orbital-roadmap__leadtime orbital-panel-eyebrow">
               <template v-if="lang === 'zh'">
                 三阶段建设 <strong class="orbital-roadmap__emph">1,000</strong> 颗计算星座
@@ -172,7 +176,6 @@
         <!-- 右侧：部署时效 + 模型案例轮播 -->
         <div
           class="constellation-services"
-          v-reveal="{ delay: 160, dir: 'right' }"
           :style="orbitCarouselShellStyle"
           :class="{
             'constellation-services--orbit-paused': orbitCarouselHover || !sectionAnimActive,
@@ -194,78 +197,90 @@
             @mouseleave="onOrbitCarouselLeave"
           >
             <div class="orbit-carousel__main">
-              <div class="orbit-carousel__content">
-                <div class="orbit-carousel__content-inner">
-                  <div :class="orbitTextBlockClass">
-                    <h4 class="orbit-carousel__name">
-                      {{ orbitCurrentSlide?.title }}
-                    </h4>
-                    <p
-                      v-if="orbitCurrentSlide?.params"
-                      class="orbit-carousel__params"
-                      :style="{ color: orbitSlideAccentColor }"
-                    >
-                      {{ orbitCurrentSlide.params }}
-                    </p>
-                    <p class="orbit-carousel__org">
-                      {{ orbitCurrentSlide?.org }}
-                    </p>
-                    <div
-                      class="orbit-carousel__nav-arrows"
-                      role="group"
-                      :aria-label="lang === 'zh' ? '轮播切换' : 'Carousel navigation'"
-                    >
-                      <button
-                        type="button"
-                        class="orbit-carousel__arrow orbit-carousel__arrow--inline"
-                        :disabled="orbitModelSlides.length < 2 || orbitElegantTransitioning"
-                        :aria-label="lang === 'zh' ? '上一案例' : 'Previous slide'"
-                        @click.stop="orbitGoPrev"
-                      >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                          <path d="M19 12H5M12 19l-7-7 7-7" />
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        class="orbit-carousel__arrow orbit-carousel__arrow--inline"
-                        :disabled="orbitModelSlides.length < 2 || orbitElegantTransitioning"
-                        :aria-label="lang === 'zh' ? '下一案例' : 'Next slide'"
-                        @click.stop="orbitGoNext"
-                      >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                          <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                      </button>
+              <transition
+                name="orbit-fade"
+                mode="out-in"
+                @before-leave="orbitSlideBusy = true"
+                @after-enter="onOrbitSlideAfterEnter"
+              >
+                <div
+                  :key="servicesSlideIndex"
+                  class="orbit-carousel__slide-pane"
+                >
+                  <div class="orbit-carousel__content">
+                    <div class="orbit-carousel__content-inner">
+                      <div class="orbit-carousel__text-block">
+                        <h4 class="orbit-carousel__name">
+                          {{ orbitCurrentSlide?.title }}
+                        </h4>
+                        <p
+                          v-if="orbitCurrentSlide?.params"
+                          class="orbit-carousel__params"
+                          :style="{ color: orbitSlideAccentColor }"
+                        >
+                          {{ orbitCurrentSlide.params }}
+                        </p>
+                        <p class="orbit-carousel__org">
+                          {{ orbitCurrentSlide?.org }}
+                        </p>
+                        <div
+                          class="orbit-carousel__nav-arrows"
+                          role="group"
+                          :aria-label="lang === 'zh' ? '轮播切换' : 'Carousel navigation'"
+                        >
+                          <button
+                            type="button"
+                            class="orbit-carousel__arrow orbit-carousel__arrow--inline"
+                            :disabled="orbitModelSlides.length < 2 || orbitSlideBusy"
+                            :aria-label="lang === 'zh' ? '上一案例' : 'Previous slide'"
+                            @click.stop="orbitGoPrev"
+                          >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                              <path d="M19 12H5M12 19l-7-7 7-7" />
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            class="orbit-carousel__arrow orbit-carousel__arrow--inline"
+                            :disabled="orbitModelSlides.length < 2 || orbitSlideBusy"
+                            :aria-label="lang === 'zh' ? '下一案例' : 'Next slide'"
+                            @click.stop="orbitGoNext"
+                          >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                              <path d="M5 12h14M12 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="orbit-carousel__image-col">
+                    <div class="orbit-carousel__image-shell">
+                      <div class="orbit-carousel__image-frame">
+                        <img
+                          v-if="orbitCurrentSlide"
+                          class="orbit-carousel__image"
+                          :src="orbitCurrentSlide.image"
+                          :alt="orbitCurrentSlide.title"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </div>
+                      <div
+                        class="orbit-carousel__frame-corner orbit-carousel__frame-corner--tl"
+                        :style="{ borderColor: orbitSlideAccentColor }"
+                        aria-hidden="true"
+                      />
+                      <div
+                        class="orbit-carousel__frame-corner orbit-carousel__frame-corner--br"
+                        :style="{ borderColor: orbitSlideAccentColor }"
+                        aria-hidden="true"
+                      />
                     </div>
                   </div>
                 </div>
-              </div>
-
-              <div class="orbit-carousel__image-col">
-                <div class="orbit-carousel__image-shell">
-                  <div :class="orbitImageFrameClass">
-                    <img
-                      v-if="orbitCurrentSlide"
-                      class="orbit-carousel__image"
-                      :src="orbitCurrentSlide.image"
-                      :alt="orbitCurrentSlide.title"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </div>
-                  <div
-                    class="orbit-carousel__frame-corner orbit-carousel__frame-corner--tl"
-                    :style="{ borderColor: orbitSlideAccentColor }"
-                    aria-hidden="true"
-                  />
-                  <div
-                    class="orbit-carousel__frame-corner orbit-carousel__frame-corner--br"
-                    :style="{ borderColor: orbitSlideAccentColor }"
-                    aria-hidden="true"
-                  />
-                </div>
-              </div>
+              </transition>
 
               <div class="orbit-carousel__card-progress" aria-hidden="true">
                 <div
@@ -325,12 +340,9 @@ export default Vue.extend({
       /** 路线图三阶段与右侧案例轮播共用同一自动切换间隔（节奏与路线图进度条一致） */
       orbitalAutoplayIntervalMs: 6400,
       /** 参考 Elegant Carousel：prev / next 决定过渡方向 */
-      orbitCarouselDir: 'next' as 'next' | 'prev',
       orbitCarouselHover: false,
-      /** ElegantCarousel 风格：半周期换片 + 文案/图淡入淡出 */
-      orbitElegantTransitioning: false,
-      orbitTransitionT1: 0 as number,
-      orbitTransitionT2: 0 as number,
+      /** `<transition mode="out-in">` 期间禁止重复切页与重置定时器 */
+      orbitSlideBusy: false,
     };
   },
   computed: {
@@ -361,22 +373,6 @@ export default Vue.extend({
     orbitSlideAccentColor(): string {
       const h = this.orbitCurrentSlide?.hue ?? 200;
       return `hsl(${h}, 72%, 58%)`;
-    },
-    orbitTextBlockClass(): Record<string, boolean> {
-      return {
-        'orbit-carousel__text-block': true,
-        'is-transitioning': this.orbitElegantTransitioning,
-        'is-dir-next': this.orbitCarouselDir === 'next',
-        'is-dir-prev': this.orbitCarouselDir === 'prev',
-      };
-    },
-    orbitImageFrameClass(): Record<string, boolean> {
-      return {
-        'orbit-carousel__image-frame': true,
-        'is-transitioning': this.orbitElegantTransitioning,
-        'is-dir-next': this.orbitCarouselDir === 'next',
-        'is-dir-prev': this.orbitCarouselDir === 'prev',
-      };
     },
     orbitModelSlides(): OrbitModelSlide[] {
       if (this.lang === 'zh') {
@@ -596,8 +592,6 @@ export default Vue.extend({
     if (s) cancelAnimationFrame(s.rafId);
     if (this.roadmapTimer) window.clearInterval(this.roadmapTimer);
     if (this.servicesTimer) window.clearInterval(this.servicesTimer);
-    if (this.orbitTransitionT1) window.clearTimeout(this.orbitTransitionT1);
-    if (this.orbitTransitionT2) window.clearTimeout(this.orbitTransitionT2);
   },
   methods: {
     pauseOrbitalMotion() {
@@ -671,7 +665,7 @@ export default Vue.extend({
     },
 
     orbitAutoAdvance() {
-      if (this.orbitCarouselHover || this.orbitElegantTransitioning) return;
+      if (this.orbitCarouselHover || this.orbitSlideBusy) return;
       const n = this.orbitModelSlides.length;
       if (!n) return;
       const next = (this.servicesSlideIndex + 1) % n;
@@ -706,36 +700,25 @@ export default Vue.extend({
       this.beginOrbitSlideChange(prev, 'prev');
     },
 
-    beginOrbitSlideChange(targetIndex: number, dir: 'next' | 'prev') {
+    beginOrbitSlideChange(targetIndex: number, _dir: 'next' | 'prev') {
       const n = this.orbitModelSlides.length;
-      if (!n || this.orbitElegantTransitioning) return;
+      if (!n || this.orbitSlideBusy) return;
       const next = ((targetIndex % n) + n) % n;
       if (next === this.servicesSlideIndex) {
         this.orbitProgressNonce += 1;
         return;
       }
-      this.orbitCarouselDir = dir;
       if (this.servicesTimer) {
         window.clearInterval(this.servicesTimer);
         this.servicesTimer = 0;
       }
-      if (this.orbitTransitionT1) window.clearTimeout(this.orbitTransitionT1);
-      if (this.orbitTransitionT2) window.clearTimeout(this.orbitTransitionT2);
-
-      this.orbitElegantTransitioning = true;
       this.orbitProgressNonce += 1;
+      this.servicesSlideIndex = next;
+    },
 
-      const half = 400;
-      const end = 450;
-      this.orbitTransitionT1 = window.setTimeout(() => {
-        this.servicesSlideIndex = next;
-        this.orbitTransitionT1 = 0;
-      }, half);
-      this.orbitTransitionT2 = window.setTimeout(() => {
-        this.orbitElegantTransitioning = false;
-        this.orbitTransitionT2 = 0;
-        if (!this.orbitCarouselHover) this.startServicesCarousel();
-      }, end);
+    onOrbitSlideAfterEnter() {
+      this.orbitSlideBusy = false;
+      if (!this.orbitCarouselHover) this.startServicesCarousel();
     },
 
     goToOrbitSlide(i: number) {
@@ -818,9 +801,9 @@ export default Vue.extend({
     max-height: none;
   }
 
-  .orbit-carousel__main {
+  .orbit-carousel__slide-pane {
     grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(160px, 36vw) auto;
+    grid-template-rows: auto minmax(160px, 36vw);
   }
 
   .orbit-carousel__content {
@@ -850,59 +833,87 @@ export default Vue.extend({
   }
 
   .orbit-carousel__card-progress {
-    grid-column: 1;
-    grid-row: 3;
+    flex-shrink: 0;
+    margin-top: 6px;
     border-radius: 2px;
   }
 }
 
-/* ── 大标题行：模块顶部宽列布局；标题左、球体右；英文单独缩字号防换行错位 ── */
+/* ── 大标题行：flex 自左打包，避免 1fr 把球区推到最右；中英通用 ── */
 .orbital-headline-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
-  /* 略缩小与标题的横向空隙，线框球更贴近主标题 */
-  gap: 24px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-start;
+  gap: clamp(12px, 1.5vw, 20px);
   margin: 4px 0 8px;
 }
 
 @media (max-width: 1100px) {
   .orbital-headline-row {
-    grid-template-columns: 1fr;
-    justify-items: center;
+    flex-direction: column;
+    align-items: stretch;
     gap: 22px;
     margin-bottom: 32px;
   }
 
   .orbital-heading {
     width: 100%;
-    max-width: 640px;
-    text-align: center;
+    max-width: none;
+    text-align: left;
+  }
+
+  .sat-visual-stack {
+    align-self: center;
   }
 }
 
+/* 与领域科学模型区块大标题（.domain-heading）同字号体系 */
 .orbital-heading {
-  font-size: clamp(36px, 5vw, 68px);
-  font-weight: 900;
-  letter-spacing: -0.04em;
+  font-size: clamp(36px, 4.5vw, 60px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
   color: #fff;
   margin: 0;
   line-height: 1.05;
   position: relative;
   z-index: 2;
   min-width: 0;
+  flex: 0 1 auto;
   max-width: 100%;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  text-align: left;
+}
+
+/* 宽屏：标题占宽为内容/上限，并预留球体 360px + 间距，球与字同排时不会隔一条「空栏」 */
+@media (min-width: 1101px) {
+  .orbital-heading {
+    max-width: min(44rem, calc(100% - 384px));
+  }
+
+  /* 中文两行标题偏短，与球体之间再留出呼吸间距；英文保持仅靠 flex gap */
+  .orbital-heading:not(.orbital-heading--en) {
+    margin-inline-end: clamp(28px, 3.6vw, 52px);
+  }
 }
 
 .orbital-heading--en {
-  font-size: clamp(30px, 4.2vw, 56px);
+  font-size: clamp(36px, 4.5vw, 60px);
   line-height: 1.08;
-  letter-spacing: -0.034em;
+  letter-spacing: -0.03em;
   overflow-wrap: normal;
   word-break: normal;
   hyphens: manual;
+}
+
+@media (max-width: 640px) {
+  .orbital-heading,
+  .orbital-heading--en {
+    font-size: clamp(28px, 8.5vw, 44px);
+    line-height: 1.08;
+  }
 }
 
 /* 区块离屏：暂停纯 CSS 的无限动画（轮播定时器在 JS 侧暂停） */
@@ -1327,11 +1338,30 @@ export default Vue.extend({
   z-index: 1;
   flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+}
+
+/* 与左侧 roadmap-fade 一致：先完整淡出再淡入（JS 仅改 key，不手写 opacity 切换） */
+.orbit-fade-enter-active,
+.orbit-fade-leave-active {
+  transition: opacity 0.38s ease, transform 0.38s ease;
+}
+
+.orbit-fade-enter,
+.orbit-fade-leave-to {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.orbit-carousel__slide-pane {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-rows: 1fr auto;
+  grid-template-rows: 1fr;
+  flex: 1;
+  min-height: 0;
   align-items: stretch;
-  margin-bottom: 0;
 }
 
 /* 左：文案垂直居中 + 左对齐 */
@@ -1365,19 +1395,6 @@ export default Vue.extend({
   width: 100%;
   max-width: 100%;
   text-align: left;
-  transition:
-    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.orbit-carousel__text-block.is-transitioning.is-dir-next {
-  opacity: 0;
-  transform: translate3d(0, -12px, 0);
-}
-
-.orbit-carousel__text-block.is-transitioning.is-dir-prev {
-  opacity: 0;
-  transform: translate3d(0, 12px, 0);
 }
 
 /* 右：配图区域（矩形框仅约束图，不套文案） */
@@ -1411,19 +1428,6 @@ export default Vue.extend({
   height: 100%;
   min-height: 96px;
   overflow: hidden;
-  transition:
-    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.orbit-carousel__image-frame.is-transitioning.is-dir-next {
-  opacity: 0;
-  transform: scale(1.02) translate3d(0, 10px, 0);
-}
-
-.orbit-carousel__image-frame.is-transitioning.is-dir-prev {
-  opacity: 0;
-  transform: scale(1.02) translate3d(0, -10px, 0);
 }
 
 .orbit-carousel__image {
@@ -1463,8 +1467,6 @@ export default Vue.extend({
 }
 
 .orbit-carousel__card-progress {
-  grid-column: 1 / -1;
-  grid-row: 2;
   flex-shrink: 0;
   height: 3px;
   width: 100%;
@@ -1618,18 +1620,13 @@ export default Vue.extend({
     opacity: 0.9;
   }
 
-  .orbit-carousel__text-block,
-  .orbit-carousel__image-frame {
-    transition: opacity 0.18s ease;
+  .orbit-fade-enter-active,
+  .orbit-fade-leave-active {
+    transition: opacity 0.22s ease;
   }
 
-  .orbit-carousel__text-block.is-transitioning.is-dir-next,
-  .orbit-carousel__text-block.is-transitioning.is-dir-prev {
-    transform: none;
-  }
-
-  .orbit-carousel__image-frame.is-transitioning.is-dir-next,
-  .orbit-carousel__image-frame.is-transitioning.is-dir-prev {
+  .orbit-fade-enter,
+  .orbit-fade-leave-to {
     transform: none;
   }
 }

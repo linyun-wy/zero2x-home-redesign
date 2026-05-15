@@ -1,5 +1,6 @@
 <template>
   <section
+    id="section-models"
     style="background:#fff;position:relative;overflow:hidden;"
     :class="{ 'section-out-of-view': !sectionAnimActive }"
   >
@@ -14,7 +15,7 @@
       >{{ frag.text }}</pre>
     </div>
 
-    <div style="max-width:1320px;margin:0 auto;padding:96px 40px 112px;position:relative;z-index:1;">
+    <div class="models-inner">
 
       <!-- Section 标题 -->
       <div style="margin-bottom:40px;">
@@ -285,6 +286,25 @@ export default Vue.extend({
 </script>
 
 <style scoped>
+#section-models {
+  scroll-margin-top: 80px;
+}
+
+.models-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 96px 40px 112px;
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  .models-inner {
+    padding: 72px 18px 88px;
+  }
+}
+
 /* ── 代码片段装饰层 ── */
 .models-code-layer {
   position: absolute;
@@ -443,11 +463,41 @@ export default Vue.extend({
 }
 
 @media (max-width: 900px) {
-  .domain-grid { grid-template-columns: 1fr 1fr; }
+  .domain-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .domain-card:nth-child(2n) {
+    border-right: none;
+  }
+
+  .domain-card:nth-child(-n + 2) {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
 }
 
-@media (max-width: 540px) {
-  .domain-grid { grid-template-columns: 1fr; }
+/* 极窄屏再单列，避免两列挤扁；375 仍保持 2×2 */
+@media (max-width: 360px) {
+  .domain-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .domain-card:nth-child(2n) {
+    border-right: none;
+  }
+
+  .domain-card:nth-child(-n + 2) {
+    border-bottom: none;
+  }
+
+  .domain-card {
+    border-right: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .domain-card:last-child {
+    border-bottom: none;
+  }
 }
 
 .domain-card {
@@ -629,5 +679,94 @@ export default Vue.extend({
 
 .domain-card:active .card-footer .card-cta-arrow {
   transform: translateX(12px);
+}
+
+@media (max-width: 640px) {
+  .section-heading,
+  .domain-heading {
+    font-size: clamp(28px, 8.5vw, 44px);
+    line-height: 1.08;
+  }
+
+  .domain-section-head {
+    margin-bottom: 24px;
+    padding-top: 32px;
+  }
+
+  .model-feature-link {
+    padding: 22px 16px;
+    margin-bottom: 32px !important;
+  }
+
+  .model-feature-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
+  }
+
+  .model-feature-main {
+    padding-right: 0;
+  }
+
+  .model-feature-head {
+    align-items: center;
+    margin-bottom: 14px;
+    gap: 10px;
+  }
+
+  .model-logo-wrap.model-logo-wrap--feature-head {
+    max-width: min(160px, 42vw);
+    min-height: 0;
+  }
+
+  .model-logo-wrap.model-logo-wrap--feature-head .model-logo-img {
+    height: clamp(26px, 7vw, 34px);
+  }
+
+  .model-title {
+    font-size: clamp(17px, 5vw, 20px);
+    line-height: 1.28;
+    text-wrap: balance;
+  }
+
+  .model-desc {
+    font-size: 13px;
+    line-height: 1.72;
+    max-width: none;
+  }
+
+  .model-feature-link .model-feature-cta.card-cta {
+    position: relative;
+    top: auto;
+    right: auto;
+    transform: none !important;
+    opacity: 1;
+    pointer-events: none;
+    margin-top: 4px;
+    align-self: flex-start;
+  }
+
+  .domain-card {
+    padding: 22px 16px;
+    min-width: 0;
+  }
+
+  .domain-card-brand {
+    min-height: 72px;
+    margin-bottom: 14px;
+  }
+
+  .card-desc {
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  .model-logo-img {
+    height: 36px;
+  }
+
+  .model-logo-img--genos {
+    height: 30px;
+  }
 }
 </style>

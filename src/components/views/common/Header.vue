@@ -159,11 +159,21 @@
         </div>
       </div>
 
-      <button class="mobile-toggle" @click="mobileOpen = !mobileOpen" :aria-expanded="mobileOpen">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <button
+        class="mobile-toggle"
+        type="button"
+        @click="mobileOpen = !mobileOpen"
+        :aria-expanded="mobileOpen"
+        :aria-label="mobileOpen ? t('header.menuClose') : t('header.menuOpen')"
+      >
+        <svg v-if="!mobileOpen" class="mobile-toggle-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <line x1="3" y1="6" x2="21" y2="6"/>
           <line x1="3" y1="12" x2="21" y2="12"/>
           <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+        <svg v-else class="mobile-toggle-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <line x1="6" y1="6" x2="18" y2="18"/>
+          <line x1="18" y1="6" x2="6" y2="18"/>
         </svg>
       </button>
     </div>
@@ -192,7 +202,7 @@
             class="mobile-cell mobile-cell--expand"
             @click="mobileExpandedKey = mobileExpandedKey === item.key ? null : item.key"
           >
-            {{ t('nav.' + item.key) }}
+            <span class="mobile-cell__label">{{ t('nav.' + item.key) }}</span>
             <span class="mobile-chevron" :class="{ open: mobileExpandedKey === item.key }">›</span>
           </button>
           <div v-show="mobileExpandedKey === item.key" class="mobile-sub">
@@ -535,6 +545,10 @@ export default Vue.extend({
       }
     },
     isPlainNavActive(key: string): boolean {
+      if (key === 'constellation') {
+        /* 「新闻」仅回首页顶部，不作为与 hash 绑定的当前页高亮 */
+        return false;
+      }
       if (key === 'home') {
         return this.$route.path === '/' && !this.$route.hash;
       }
@@ -549,6 +563,18 @@ export default Vue.extend({
     onPlainNav(item: NavLinkItem | NavDropdownItem) {
       if ('dropdown' in item && item.dropdown) return;
       const key = item.key;
+      if (key === 'constellation') {
+        this.activeNav = 'home';
+        this.$router.push({ path: '/' }).catch(() => {});
+        this.$nextTick(() => {
+          try {
+            window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+          } catch (_) {
+            window.scrollTo(0, 0);
+          }
+        });
+        return;
+      }
       this.activeNav = key;
       if (key === 'home') {
         this.$router.push({ path: '/' }).catch(() => {});
@@ -560,8 +586,6 @@ export default Vue.extend({
         this.$router.push({ path: '/', hash: '#section-cases' }).catch(() => {});
       } else if (key === 'events') {
         this.$router.push({ path: '/', hash: '#section-events' }).catch(() => {});
-      } else if (key === 'constellation') {
-        this.$router.push({ path: '/', hash: '#section-constellation' }).catch(() => {});
       }
     },
     syncNavFromRoute() {
@@ -577,7 +601,6 @@ export default Vue.extend({
       }
       if (path === '/') {
         if (hash === '#section-cases') this.activeNav = 'cases';
-        else if (hash === '#section-constellation') this.activeNav = 'constellation';
         else if (hash === '#section-events') this.activeNav = 'events';
         else this.activeNav = 'home';
       }
@@ -630,7 +653,7 @@ export default Vue.extend({
 }
 
 .nav-logo-wordmark {
-  font-size: clamp(17px, 1.85vw, 21px);
+  font-size: 21px;
   font-weight: 900;
   letter-spacing: -0.04em;
   font-family: var(--font-display, 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif);
@@ -1090,7 +1113,7 @@ export default Vue.extend({
   cursor: default;
   color: rgba(0, 0, 0, 0.45);
   font-size: 12px;
-  justify-content: flex-start;
+  justify-content: center;
 }
 
 .mobile-toggle {
@@ -1128,6 +1151,7 @@ export default Vue.extend({
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  justify-content: flex-start;
 }
 
 .mobile-site-btn {
@@ -1155,14 +1179,18 @@ export default Vue.extend({
 .mobile-cell {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
   padding: 16px 28px;
   font-size: 14px;
   font-weight: 500;
   color: rgba(0, 0, 0, 0.7);
   text-decoration: none;
+  text-align: center;
   transition: background 0.2s;
   cursor: crosshair;
+  position: relative;
 }
 
 .mobile-cell--expand {
@@ -1170,18 +1198,29 @@ export default Vue.extend({
   background: none;
   border: none;
   font: inherit;
-  text-align: left;
+}
+
+/* 文案居中，展开箭头贴右，避免与居中标题抢 flex 空间 */
+.mobile-cell__label {
+  flex: 1;
+  text-align: center;
+  padding: 0 32px;
 }
 
 .mobile-chevron {
+  position: absolute;
+  right: 28px;
+  top: 50%;
   font-size: 18px;
   color: rgba(0, 0, 0, 0.35);
   transition: transform 0.2s;
   display: inline-block;
+  transform: translateY(-50%);
+  line-height: 1;
 }
 
 .mobile-chevron.open {
-  transform: rotate(90deg);
+  transform: translateY(-50%) rotate(90deg);
 }
 
 .mobile-sub {
